@@ -6,7 +6,6 @@ require('dotenv').config();
 const bot = new Bot(process.env.TELEGRAM_BOT_TOKEN);
 
 // Register listeners below
-
 // Handle /start command
 bot.command("start", async (ctx) => {
     await ctx.reply("*Hi\\!* _Welcome_ to [United Walls](t.me/UnitedWalls_Bot)\\.", { parse_mode: "MarkdownV2" } );
@@ -33,7 +32,7 @@ bot.on("message", async (ctx) => {
 
                 if (msg.document?.file_name.match(fileNameRegexp) == null) {
                     console.error("Invalid File name");
-                    await bot.api.sendMessage(-1001725269941, `Error: Hey, @${ msg.from.username }, File Name is invalid, it should be like SomeName_12345.ext.\n\nIt's no rocket science, I don't know if your parents taught you simple ABCD, but like c'mon, you really suck at this`);
+                    await bot.api.sendMessage(-1001725269941, `Error: Hey, @${ msg.from.username }, Your shitty file name **${msg.document?.file_name}**, is invalid, it should be like SomeName_12345.ext.\n\nIt's no rocket science, I don't know if your parents taught you simple ABCD, but like c'mon, you really suck at this`);
                     return;
                 }
 
@@ -51,7 +50,7 @@ bot.on("message", async (ctx) => {
 
                     await Category.findByIdAndUpdate(newCategory._id, { $push: { walls: newWall } });
 
-                    await bot.api.sendMessage(-1001725269941, `New category - ${ newCategory.name } created and added to the database.\n\nWallpaper - ${ newWall.file_name } added to database.\n\nObject id - ${ newWall._id } (for reference).\n\nAdded by - ${ msg.from.username }.`);
+                    await bot.api.sendMessage(-1001725269941, `**New category** - ${ newCategory.name } created and added to the database.\n\n**Wallpaper** - ${ newWall.file_name } added to database.\n\n**Object id** - ${ newWall._id } (for reference).\n\n**Added by** - ${ msg.from.username }.`);
                     return;
                 } else {
                     const newWall = await Walls.create({
@@ -63,7 +62,7 @@ bot.on("message", async (ctx) => {
 
                     await Category.findByIdAndUpdate(category._id, { $push: { walls: newWall } });
 
-                    await bot.api.sendMessage(-1001725269941, `Wallpaper - ${ newWall.file_name } added to database.\n\nCategory - ${ category.name }.\n\nObject ID - ${ newWall._id } (for reference).\n\nAdded by - ${ msg.from.username }.`);
+                    await bot.api.sendMessage(-1001725269941, `**Wallpaper** - ${ newWall.file_name } added to database.\n\n**Category** - ${ category.name }.\n\nObject ID - ${ newWall._id } (for reference).\n\n**Added by** - ${ msg.from.username }.`);
                     return;
                 }
             } else {
@@ -75,7 +74,6 @@ bot.on("message", async (ctx) => {
             ctx.reply(`Error: Hey, @${ msg.from.username }, could not save to Database.\n\nYou've become the greatest and the worst person to do this job, that's saying something!`);
             return;
         }
-        
     }
 });
 

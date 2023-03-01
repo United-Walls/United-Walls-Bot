@@ -11,7 +11,7 @@ Access -    Public
 
 router.get("/", async (req, res) => {
     try {
-        const categories = await Category.find().populate({ path: 'walls', options: { sort: { 'file_name': 1 } } });
+        const categories = await Category.find().populate({ path: 'walls', options: { sort: { 'file_name': 1 } } }).sort({ name: 1 });
         let editedCategories = await Promise.all(categories.map(async (category) => {
             let newWalls = await Promise.all(category.walls.map(async (wall) => {
                 const response = await axios.get(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/getFile?file_id=${wall.file_id}`);
