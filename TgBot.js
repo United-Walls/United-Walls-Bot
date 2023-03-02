@@ -29,11 +29,15 @@ bot.command("menu", async (ctx) => {
 
         setTimeout(() => {
             bot.api.deleteMessage(chat_id, messageToDelete);
-        }, 2500);
+        }, 3500);
     }
 });
 
 bot.callbackQuery("exit-payload", async (ctx) => {
+    if (chat_id != 0 && messageToDelete2 != 0 && messageToDelete2 != null) {
+        bot.api.deleteMessage(chat_id, messageToDelete2);
+    }
+    
     if (chat_id != 0 && (messageToDelete != 0 && messageToDelete != null)) {
         bot.api.deleteMessage(chat_id, messageToDelete);
     }
@@ -49,7 +53,7 @@ bot.callbackQuery("edit-payload", async (ctx) => {
     messageToDelete = ctx.update.callback_query.message.message_id + 1;
     chat_id = ctx.update.callback_query.message.chat.id;
 
-    if (ctx.update.message.from.id == 975024565 || ctx.update.message.from.id == 934949695 || ctx.update.message.from.id == 1889905927) {
+    if (ctx.update.callback_query.from.id == 975024565 || ctx.update.callback_query.from.id == 934949695 || ctx.update.callback_query.from.id == 1889905927) {
         const allCategories = await Category.find().sort({ file_name: 1 });
 
         let editKeyboard = { inline_keyboard: [] };
@@ -90,7 +94,7 @@ bot.callbackQuery("edit-payload", async (ctx) => {
 
         setTimeout(() => {
             bot.api.deleteMessage(chat_id, messageToDelete);
-        }, 2500);
+        }, 3500);
     }
 });
 
@@ -103,14 +107,14 @@ bot.callbackQuery("go-back-from-edit-payload", async (ctx) => {
     messageToDelete = ctx.update.callback_query.message.message_id + 1;
     chat_id = ctx.update.callback_query.message.chat.id;
 
-    if (ctx.update.message.from.id == 975024565 || ctx.update.message.from.id == 934949695 || ctx.update.message.from.id == 1889905927) {
+    if (ctx.update.callback_query.from.id == 975024565 || ctx.update.callback_query.from.id == 934949695 || ctx.update.callback_query.from.id == 1889905927) {
         await ctx.reply(`Welcome to the United Walls Menu. Below are settings to manipulate the Wallpapers added in the Database. So, @${ctx.update.callback_query.from.username} what you want to do?`, { reply_markup: inlineKeyboard });
     } else {
         await ctx.reply(`Ok who the fuck? You're not allowed to use this bot Motherfucker! Fuck off!`);
 
         setTimeout(() => {
             bot.api.deleteMessage(chat_id, messageToDelete);
-        }, 2500);
+        }, 3500);
     }
 })
 
@@ -128,7 +132,7 @@ bot.on("callback_query:data", async(ctx) => {
         messageToDelete = ctx.update.callback_query.message.message_id + 1;
         chat_id = ctx.update.callback_query.message.chat.id;
 
-        if (ctx.update.message.from.id == 975024565 || ctx.update.message.from.id == 934949695 || ctx.update.message.from.id == 1889905927) {
+        if (ctx.update.callback_query.from.id == 975024565 || ctx.update.callback_query.from.id == 934949695 || ctx.update.callback_query.from.id == 1889905927) {
             const category_id = ctx.update.callback_query.data.split('_')[1]
 
             const category = await Category.findById(category_id).populate({ path: 'walls', options: { sort: { 'file_name': 1 } } });
@@ -185,7 +189,7 @@ bot.on("callback_query:data", async(ctx) => {
         messageToDelete = ctx.update.callback_query.message.message_id + 1;
         chat_id = ctx.update.callback_query.message.chat.id;
 
-        if (ctx.update.message.from.id == 975024565 || ctx.update.message.from.id == 934949695 || ctx.update.message.from.id == 1889905927) {
+        if (ctx.update.callback_query.from.id == 975024565 || ctx.update.callback_query.from.id == 934949695 || ctx.update.callback_query.from.id == 1889905927) {
             const wall_id = ctx.update.callback_query.data.split('_')[1];
 
             const wall = await Walls.findById(wall_id).populate('category').sort({ 'file_name': 1 });
@@ -224,7 +228,7 @@ bot.on("callback_query:data", async(ctx) => {
     
             setTimeout(() => {
                 bot.api.deleteMessage(chat_id, messageToDelete);
-            }, 2500);
+            }, 3500);
         }
     }
 });
