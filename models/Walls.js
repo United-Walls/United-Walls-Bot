@@ -15,6 +15,9 @@ const wallsSchema = new mongoose.Schema({
     category: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "category"
+    },
+    addedBy: {
+        type: String
     }
 }, { timestamps: true });
 
