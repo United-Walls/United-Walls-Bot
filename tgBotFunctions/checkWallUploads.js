@@ -73,6 +73,7 @@ const checkWallUploads = async (msg, bot, ctx) => {
 						file_id: msg.document?.file_id,
 						mime_type: msg.document?.mime_type,
 						category: newCategory._id,
+						addedBy: msg.from.username,
 					});
 
 					await Category.findByIdAndUpdate(newCategory._id, {
