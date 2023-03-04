@@ -14,6 +14,8 @@ const checkWallUploads = require('./tgBotFunctions/checkWallUploads');
 const editWallName = require('./tgBotFunctions/editWallName');
 const addUploaderMethod = require('./tgBotFunctions/addUploader');
 const deleteWall = require('./tgBotFunctions/deleteWall');
+const editCategoryMenu = require('./tgBotFunctions/editCategoryMenu');
+const changeCategory = require('./tgBotFunctions/changeCategory');
 
 // Register listeners below
 // Handle /start command
@@ -225,6 +227,29 @@ bot.on('callback_query:data', async (ctx) => {
 			ctx.update.callback_query.from.id == 934949695 ||
 			ctx.update.callback_query.from.id == 1889905927
 		) {
+			wallId = data.split('_')[1];
+
+			await editCategoryMenu(ctx);
+		} else {
+			await unauthorized(ctx, chat_id, messageToDelete);
+		}
+	}
+
+	if (data.split('_')[0] == 'ChC') {
+		messageToDelete2 = 0;
+		messageToDelete = ctx.update.callback_query.message.message_id + 1;
+		chat_id = ctx.update.callback_query.message.chat.id;
+
+		if (
+			ctx.update.callback_query.from.id == 975024565 ||
+			ctx.update.callback_query.from.id == 934949695 ||
+			ctx.update.callback_query.from.id == 1889905927
+		) {
+			await changeCategory(ctx, wallId, data.split('_')[1]);
+			wallId = '';
+			setTimeout(async () => {
+				await deleteMessage(ctx, chat_id, messageToDelete, messageToDelete2);
+			}, 3500);
 		} else {
 			await unauthorized(ctx, chat_id, messageToDelete);
 		}
