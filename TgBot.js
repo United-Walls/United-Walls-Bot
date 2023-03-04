@@ -4,317 +4,307 @@ const Walls = require('./models/Walls');
 require('dotenv').config();
 // Create new instance of Bot class, pass your token in the Bot constructor.
 const bot = new Bot(process.env.TELEGRAM_BOT_TOKEN);
+const menuMethod = require('./tgBotFunctions/menu');
+const unauthorized = require('./tgBotFunctions/unauthorized');
+const deleteMessage = require('./tgBotFunctions/delete');
+const categoriesMenu = require('./tgBotFunctions/categoriesMenu');
+const categoryWallsMenu = require('./tgBotFunctions/categoryWallsMenu');
+const wallMenu = require('./tgBotFunctions/wallMenu');
+const checkWallUploads = require('./tgBotFunctions/checkWallUploads');
+const editWallName = require('./tgBotFunctions/editWallName');
+const addUploaderMethod = require('./tgBotFunctions/addUploader');
+const deleteWall = require('./tgBotFunctions/deleteWall');
 
 // Register listeners below
 // Handle /start command
-bot.command("start", async (ctx) => {
-    await ctx.reply("*Hi\\!* _Welcome_ to [United Walls](t.me/UnitedWalls_Bot)\\.", { parse_mode: "MarkdownV2" } );
-    await ctx.reply("As you see\\, I'm just a bot\\. Join our Group to access our Awesome Walls\\! \\:\\)\n\nOur Group is [United Setups](t.me/unitedsetups)\\.", { parse_mode: "MarkdownV2" } )
+bot.command('start', async (ctx) => {
+	await ctx.reply(
+		'*Hi\\!* _Welcome_ to [United Walls](t.me/UnitedWalls_Bot)\\.',
+		{ parse_mode: 'MarkdownV2' }
+	);
+	await ctx.reply(
+		"As you see\\, I'm just a bot\\. Join our Group to access our Awesome Walls\\! \\:\\)\n\nOur Group is [United Setups](t.me/unitedsetups)\\.",
+		{ parse_mode: 'MarkdownV2' }
+	);
 });
 
-const inlineKeyboard = new InlineKeyboard().text("Edit Wall", "edit-payload").text("Delete Wall", "delete-payload").row().text("Exit", "exit-payload");
+const inlineKeyboard = new InlineKeyboard()
+	.text('Options', 'edit-payload')
+	.row()
+	.text('Exit', 'exit-payload');
 
 let messageToDelete2 = 0;
 let messageToDelete = 0;
-let chat_id = 0
+let chat_id = 0;
+let editName = false;
+let addUploader = false;
+let wallId = '';
 
-bot.command("menu", async (ctx) => {
-    messageToDelete2 = 0;
-    messageToDelete = ctx.update.message.message_id + 1;
-    chat_id = ctx.update.message.chat.id;
-    if (ctx.update.message.from.id == 975024565 || ctx.update.message.from.id == 934949695 || ctx.update.message.from.id == 1889905927) {
-        await ctx.reply(`Welcome to the United Walls Menu. Below are settings to manipulate the Wallpapers added in the Database. So, @${ctx.update.message.from.username} what you want to do?`, { reply_markup: inlineKeyboard });
-    } else {
-        await ctx.reply(`Ok who the fuck? You're not allowed to use this bot Motherfucker! Fuck off!`);
+bot.command('menu', async (ctx) => {
+	messageToDelete2 = 0;
+	messageToDelete = ctx.update.message.message_id + 1;
+	chat_id = ctx.update.message.chat.id;
 
-        setTimeout(() => {
-            bot.api.deleteMessage(chat_id, messageToDelete);
-        }, 3500);
-    }
+	if (
+		ctx.update.message.from.id == 975024565 ||
+		ctx.update.message.from.id == 934949695 ||
+		ctx.update.message.from.id == 1889905927
+	) {
+		await menuMethod(ctx, true, inlineKeyboard);
+	} else {
+		await unauthorized(ctx, chat_id, messageToDelete);
+	}
 });
 
-bot.callbackQuery("exit-payload", async (ctx) => {
-    if (chat_id != 0 && messageToDelete2 != 0 && messageToDelete2 != null) {
-        bot.api.deleteMessage(chat_id, messageToDelete2);
-    }
-    
-    if (chat_id != 0 && (messageToDelete != 0 && messageToDelete != null)) {
-        bot.api.deleteMessage(chat_id, messageToDelete);
-    }
-})
-  
+bot.callbackQuery('exit-payload', async (ctx) => {
+	await deleteMessage(ctx, chat_id, messageToDelete, messageToDelete2);
+});
+
 // Wait for click events with specific callback data.
-bot.callbackQuery("edit-payload", async (ctx) => {
-    if (chat_id != 0 && (messageToDelete != 0 && messageToDelete != null)) {
-        bot.api.deleteMessage(chat_id, messageToDelete);
-    }
+bot.callbackQuery('edit-payload', async (ctx) => {
+	await deleteMessage(ctx, chat_id, messageToDelete, messageToDelete2);
 
-    messageToDelete2 = 0;
-    messageToDelete = ctx.update.callback_query.message.message_id + 1;
-    chat_id = ctx.update.callback_query.message.chat.id;
+	messageToDelete2 = 0;
+	messageToDelete = ctx.update.callback_query.message.message_id + 1;
+	chat_id = ctx.update.callback_query.message.chat.id;
 
-    if (ctx.update.callback_query.from.id == 975024565 || ctx.update.callback_query.from.id == 934949695 || ctx.update.callback_query.from.id == 1889905927) {
-        const allCategories = await Category.find().sort({ file_name: 1 });
-
-        let editKeyboard = { inline_keyboard: [] };
-        let categoriesMapped = [];
-
-        await Promise.all(allCategories.map(category => {
-            categoriesMapped.push({
-                text: category.name,
-                callback_data: `Cat_${category.id}`
-            });
-        }));
-
-        let array = [];
-
-        for(let i = 0; i < categoriesMapped.length; i++) {
-            let mappedCategory = categoriesMapped[i];
-            array.push(mappedCategory);
-
-            if ((i + 1) % 2 == 0) {
-                editKeyboard.inline_keyboard.push(array);
-                array = []
-            }
-        }
-
-        editKeyboard.inline_keyboard.push([{
-            text: "Go back",
-            callback_data: "go-back-from-edit-payload"
-        }]);
-
-        editKeyboard.inline_keyboard.push([
-            {text: "Exit",
-            callback_data: 'exit-payload'}
-        ]);
-
-        await ctx.reply(`Choose a Category to edit a Wallpaper from -`, { reply_markup: editKeyboard })
-    } else {
-        await ctx.reply(`Ok who the fuck? You're not allowed to use this bot Motherfucker! Fuck off!`);
-
-        setTimeout(() => {
-            bot.api.deleteMessage(chat_id, messageToDelete);
-        }, 3500);
-    }
+	if (
+		ctx.update.callback_query.from.id == 975024565 ||
+		ctx.update.callback_query.from.id == 934949695 ||
+		ctx.update.callback_query.from.id == 1889905927
+	) {
+		await categoriesMenu(ctx);
+	} else {
+		await unauthorized(ctx, chat_id, messageToDelete);
+	}
 });
 
-bot.callbackQuery("go-back-from-edit-payload", async (ctx) => {
-    if (chat_id != 0 && (messageToDelete != 0 && messageToDelete != null)) {
-        bot.api.deleteMessage(chat_id, messageToDelete);
-    }
+bot.callbackQuery('go-back-from-edit-payload', async (ctx) => {
+	await deleteMessage(ctx, chat_id, messageToDelete, messageToDelete2);
 
-    messageToDelete2 = 0;
-    messageToDelete = ctx.update.callback_query.message.message_id + 1;
-    chat_id = ctx.update.callback_query.message.chat.id;
+	messageToDelete2 = 0;
+	messageToDelete = ctx.update.callback_query.message.message_id + 1;
+	chat_id = ctx.update.callback_query.message.chat.id;
 
-    if (ctx.update.callback_query.from.id == 975024565 || ctx.update.callback_query.from.id == 934949695 || ctx.update.callback_query.from.id == 1889905927) {
-        await ctx.reply(`Welcome to the United Walls Menu. Below are settings to manipulate the Wallpapers added in the Database. So, @${ctx.update.callback_query.from.username} what you want to do?`, { reply_markup: inlineKeyboard });
-    } else {
-        await ctx.reply(`Ok who the fuck? You're not allowed to use this bot Motherfucker! Fuck off!`);
+	if (
+		ctx.update.callback_query.from.id == 975024565 ||
+		ctx.update.callback_query.from.id == 934949695 ||
+		ctx.update.callback_query.from.id == 1889905927
+	) {
+		await menuMethod(ctx, false, inlineKeyboard);
+	} else {
+		await unauthorized(ctx, chat_id, messageToDelete);
+	}
+});
 
-        setTimeout(() => {
-            bot.api.deleteMessage(chat_id, messageToDelete);
-        }, 3500);
-    }
-})
+bot.on('callback_query:data', async (ctx) => {
+	await deleteMessage(ctx, chat_id, messageToDelete, messageToDelete2);
 
-bot.on("callback_query:data", async(ctx) => {
-    if (chat_id != 0 && (messageToDelete != 0 && messageToDelete != null)) {
-        bot.api.deleteMessage(chat_id, messageToDelete);
-    }
+	const data = ctx.update.callback_query.data;
 
-    if (chat_id != 0 && messageToDelete2 != 0 && messageToDelete2 != null) {
-        bot.api.deleteMessage(chat_id, messageToDelete2);
-    }
+	if (data.split('_')[0] == 'Cat') {
+		messageToDelete2 = 0;
+		messageToDelete = ctx.update.callback_query.message.message_id + 1;
+		chat_id = ctx.update.callback_query.message.chat.id;
 
-    if (ctx.update.callback_query.data.split('_')[0] == "Cat") {
-        messageToDelete2 = 0;
-        messageToDelete = ctx.update.callback_query.message.message_id + 1;
-        chat_id = ctx.update.callback_query.message.chat.id;
+		if (
+			ctx.update.callback_query.from.id == 975024565 ||
+			ctx.update.callback_query.from.id == 934949695 ||
+			ctx.update.callback_query.from.id == 1889905927
+		) {
+			await categoryWallsMenu(ctx, data);
+		} else {
+			await unauthorized(ctx, chat_id, messageToDelete);
+		}
+	}
 
-        if (ctx.update.callback_query.from.id == 975024565 || ctx.update.callback_query.from.id == 934949695 || ctx.update.callback_query.from.id == 1889905927) {
-            const category_id = ctx.update.callback_query.data.split('_')[1]
+	if (data.split('_')[0] == 'Wal') {
+		messageToDelete2 = ctx.update.callback_query.message.message_id + 2;
+		messageToDelete = ctx.update.callback_query.message.message_id + 1;
+		chat_id = ctx.update.callback_query.message.chat.id;
 
-            const category = await Category.findById(category_id).populate({ path: 'walls', options: { sort: { 'file_name': 1 } } });
+		if (
+			ctx.update.callback_query.from.id == 975024565 ||
+			ctx.update.callback_query.from.id == 934949695 ||
+			ctx.update.callback_query.from.id == 1889905927
+		) {
+			await wallMenu(ctx, data, chat_id);
+		} else {
+			await unauthorized(ctx, chat_id, messageToDelete);
+		}
+	}
 
-            let editKeyboard = { inline_keyboard: [] };
-            let wallsMapped = [];
+	if (data.split('_')[0] == 'EdN') {
+		messageToDelete2 = 0;
+		messageToDelete = ctx.update.callback_query.message.message_id + 1;
+		chat_id = ctx.update.callback_query.message.chat.id;
 
-            await Promise.all(category.walls.map(wall => {
-                wallsMapped.push({
-                    text: wall.file_name,
-                    callback_data: `Wal_${wall.id}`
-                });
-            }));
+		if (
+			ctx.update.callback_query.from.id == 975024565 ||
+			ctx.update.callback_query.from.id == 934949695 ||
+			ctx.update.callback_query.from.id == 1889905927
+		) {
+			editName = true;
+			wallId = data.split('_')[1];
 
-            let array = [];
+			let editKeyboard = {
+				inline_keyboard: [
+					[{ text: 'Go back', callback_data: `Wal_${data.split('_')[1]}` }],
+					[{ text: 'Exit', callback_data: 'exit-payload' }],
+				],
+			};
 
-            for (let i = 0; i < wallsMapped.length; i++) {
-                let mappedWall = wallsMapped[i];
+			await ctx.reply('Please enter a new name for the Wallpaper.', {
+				reply_markup: editKeyboard,
+			});
+		} else {
+			await unauthorized(ctx, chat_id, messageToDelete);
+		}
+	}
 
-                if (wallsMapped.length > 2) {
-                    array.push(mappedWall);
-        
-                    if ((i+1) % 2 == 0) {
-                        editKeyboard.inline_keyboard.push(array);
-                        array = []
-                    }
-                } else {
-                    editKeyboard.inline_keyboard.push([mappedWall])
-                }
-            }
+	if (data.split('_')[0] == 'AdU') {
+		messageToDelete2 = 0;
+		messageToDelete = ctx.update.callback_query.message.message_id + 1;
+		chat_id = ctx.update.callback_query.message.chat.id;
 
-            editKeyboard.inline_keyboard.push([{
-                text: "Go back",
-                callback_data: "edit-payload"
-            }]);
+		if (
+			ctx.update.callback_query.from.id == 975024565 ||
+			ctx.update.callback_query.from.id == 934949695 ||
+			ctx.update.callback_query.from.id == 1889905927
+		) {
+			addUploader = true;
+			wallId = data.split('_')[1];
 
-            editKeyboard.inline_keyboard.push([
-                {text: "Exit",
-                callback_data: 'exit-payload'}
-            ]);
+			let editKeyboard = {
+				inline_keyboard: [
+					[{ text: 'Go back', callback_data: `Wal_${data.split('_')[1]}` }],
+					[{ text: 'Exit', callback_data: 'exit-payload' }],
+				],
+			};
 
-            await ctx.reply(`Choose a Wallpaper to edit -`, { reply_markup: editKeyboard });
-        } else {
-            await ctx.reply(`Ok who the fuck? You're not allowed to use this bot Motherfucker! Fuck off!`);
-    
-            setTimeout(() => {
-                bot.api.deleteMessage(chat_id, messageToDelete);
-            }, 3500);
-        }
-    }
+			await ctx.reply(
+				'Please enter the name of the Uploader of the Wallpaper.',
+				{
+					reply_markup: editKeyboard,
+				}
+			);
+		} else {
+			await unauthorized(ctx, chat_id, messageToDelete);
+		}
+	}
 
-    if (ctx.update.callback_query.data.split('_')[0] == "Wal") {
-        messageToDelete2 = ctx.update.callback_query.message.message_id + 2;
-        messageToDelete = ctx.update.callback_query.message.message_id + 1;
-        chat_id = ctx.update.callback_query.message.chat.id;
+	if (data.split('_')[0] == 'Del') {
+		messageToDelete2 = 0;
+		messageToDelete = ctx.update.callback_query.message.message_id + 1;
+		chat_id = ctx.update.callback_query.message.chat.id;
 
-        if (ctx.update.callback_query.from.id == 975024565 || ctx.update.callback_query.from.id == 934949695 || ctx.update.callback_query.from.id == 1889905927) {
-            const wall_id = ctx.update.callback_query.data.split('_')[1];
+		if (
+			ctx.update.callback_query.from.id == 975024565 ||
+			ctx.update.callback_query.from.id == 934949695 ||
+			ctx.update.callback_query.from.id == 1889905927
+		) {
+			const fileName = await deleteWall(data.split('_')[1]);
 
-            const wall = await Walls.findById(wall_id).populate('category').sort({ 'file_name': 1 });
+			await ctx.reply('Wallpaper - ' + fileName + ' Deleted.');
 
-            let editKeyboard = { inline_keyboard: [
-                [
-                    {text: "Edit Name",
-                    callback_data: `EdN_${wall_id}`}
-                ],
-                [
-                    {text: "Add Uploader",
-                    callback_data: `AdU_${wall_id}`}
-                ],
-                [
-                    {text: "Edit Uploader",
-                    callback_data: `EdU_${wall_id}`}
-                ],
-                [
-                    {text: "Edit Category",
-                    callback_data: `EdC_${wall_id}`}
-                ],
-                [
-                    {text: "Go back",
-                    callback_data: `Cat_${wall.category.id}`}
-                ],
-                [
-                    {text: "Exit",
-                    callback_data: 'exit-payload'}
-                ]
-            ] };
+			setTimeout(async () => {
+				await deleteMessage(ctx, chat_id, messageToDelete, messageToDelete2);
+			}, 3500);
+		} else {
+			await unauthorized(ctx, chat_id, messageToDelete);
+		}
+	}
 
-            await bot.api.sendDocument(chat_id, wall.file_id);
-            await ctx.reply(`Edit ${wall.file_name}?`, { reply_markup: editKeyboard });
-        } else {
-            await ctx.reply(`Ok who the fuck? You're not allowed to use this bot Motherfucker! Fuck off!`);
-    
-            setTimeout(() => {
-                bot.api.deleteMessage(chat_id, messageToDelete);
-            }, 3500);
-        }
-    }
+	if (data.split('_')[0] == 'EdC') {
+		messageToDelete2 = 0;
+		messageToDelete = ctx.update.callback_query.message.message_id + 1;
+		chat_id = ctx.update.callback_query.message.chat.id;
+
+		if (
+			ctx.update.callback_query.from.id == 975024565 ||
+			ctx.update.callback_query.from.id == 934949695 ||
+			ctx.update.callback_query.from.id == 1889905927
+		) {
+		} else {
+			await unauthorized(ctx, chat_id, messageToDelete);
+		}
+	}
 });
 
 // Check messages
-bot.on("message", async (ctx) => {
-    const msg = ctx.message;
-    if( 'document' in msg && (msg.document?.mime_type == 'image/png' || msg.document?.mime_type == 'image/jpg' || msg.document?.mime_type == 'image/jpeg') && (msg.from.id == 975024565 || msg.from.id == 934949695 || msg.from.id == 1889905927) && msg.is_topic_message && msg.message_thread_id && msg.message_thread_id == 185847) {
-        if (msg.document?.file_size > 5000000) {
-            console.error("File is more than 5MB!");
-            await bot.api.sendMessage(-1001747180858, `Error: Hey, @${ msg.from.username }, Did you check the Size of this file?\n\nLike dude are you blind or something?\n\nThe limit is not more than 5MB, if it is more than this I wont allow your shitty Huge file dude! Now Fuck off!`);
-            return;
-        }
-        try {
-            const fileNameRegexp = /[A-Z][a-z].*_[0-9]+.*[A-Za-z]+/;
+bot.on('message', async (ctx) => {
+	if (editName == true) {
+		await deleteMessage(ctx, chat_id, messageToDelete, messageToDelete2);
 
-            let wall = await Walls.findOne({ file_name: msg.document?.file_name.split('.')[0] });
+		messageToDelete2 = 0;
+		messageToDelete = messageToDelete + 2;
 
-            let category = await Category.findOne({name: msg.document?.file_name.split('.')[0].split('_')[0].replace(/([A-Z])/g, ' $1').trim()});
+		await editWallName(ctx, wallId);
 
-            if (!wall) {
-                if (!msg.document?.file_id) {
-                    console.error("File doesn't have an id!");
-                    await bot.api.sendMessage(-1001747180858, `Error: Hey, @${ msg.from.username }, No ID for file could be fetched, can not save to database.\n\nIt seems like you suck at uploading wallpapers, which is weird because it should be easy to do.`);
-                    return;
-                }
+		editName = false;
+		wallId = '';
 
-                if (msg.document?.file_name.match(fileNameRegexp) == null) {
-                    console.error("Invalid File name");
-                    await bot.api.sendMessage(-1001747180858, `Error: Hey, @${ msg.from.username }, Your shitty file name ${msg.document?.file_name.bold()}, is invalid, it should be like SomeName_12345.ext.\n\nIt's no rocket science, I don't know if your parents taught you simple ABCD, but like c'mon, you really suck at this`, { parse_mode: "HTML" });
-                    return;
-                }
+		setTimeout(async () => {
+			await deleteMessage(ctx, chat_id, messageToDelete, messageToDelete2);
+		}, 3500);
 
-                if (!category) {
-                    let newCategory = await Category.create({
-                        name: msg.document?.file_name.split('.')[0].split('_')[0].replace(/([A-Z])/g, ' $1').trim()
-                    });
+		return;
+	}
 
-                    const newWall = await Walls.create({
-                        file_name: msg.document?.file_name.split('.')[0],
-                        file_id: msg.document?.file_id,
-                        mime_type: msg.document?.mime_type,
-                        category: newCategory._id
-                    });
+	if (addUploader == true) {
+		await deleteMessage(ctx, chat_id, messageToDelete, messageToDelete2);
 
-                    await Category.findByIdAndUpdate(newCategory._id, { $push: { walls: newWall } });
+		messageToDelete2 = 0;
+		messageToDelete = messageToDelete + 2;
 
-                    await bot.api.sendMessage(-1001747180858, `**New category** - ${ newCategory.name } created and added to the database.\n\n**Wallpaper** - ${ newWall.file_name } added to database.\n\n**Object id** - ${ newWall._id } (for reference).\n\n**Added by** - ${ msg.from.username }.`);
-                    return;
-                } else {
-                    const newWall = await Walls.create({
-                        file_name: msg.document?.file_name.split('.')[0],
-                        file_id: msg.document?.file_id,
-                        mime_type: msg.document?.mime_type,
-                        category: category._id,
-                        addedBy: msg.from.username
-                    });
+		await addUploaderMethod(ctx, wallId);
 
-                    await Category.findByIdAndUpdate(category._id, { $push: { walls: newWall } });
+		addUploader = false;
+		wallId = '';
 
-                    await bot.api.sendMessage(-1001747180858, `**Wallpaper** - ${ newWall.file_name } added to database.\n\n**Category** - ${ category.name }.\n\nObject ID - ${ newWall._id } (for reference).\n\n**Added by** - ${ msg.from.username }.`);
-                    return;
-                }
-            } else {
-                await bot.api.sendMessage(-1001747180858, `Error: Hey, @${ msg.from.username }, a wallpaper with the same name - ${wall.file_name} whose database document Object ID is ${wall._id} (for reference), is already added to the database.\n\nPlease have some common sense, don't be an idiot and change the name or make sure it's not already added in the Database.`);
-                return;
-            }
-        } catch (error) {
-            console.error(error.message);
-            ctx.reply(`Error: Hey, @${ msg.from.username }, could not save to Database.\n\nYou've become the greatest and the worst person to do this job, that's saying something!`);
-            return;
-        }
-    }
+		setTimeout(async () => {
+			await deleteMessage(ctx, chat_id, messageToDelete, messageToDelete2);
+		}, 3500);
+
+		return;
+	}
+	const msg = ctx.message;
+
+	if (
+		'document' in msg == false &&
+		msg.is_topic_message &&
+		msg.message_thread_id &&
+		msg.message_thread_id == 185847 &&
+		msg.from.id != 975024565 &&
+		msg.from.id != 934949695 &&
+		msg.from.id != 1889905927
+	) {
+		messageToDelete2 = 0;
+		messageToDelete = ctx.message.message_id;
+		chat_id = ctx.message.chat.id;
+
+		await ctx.reply(
+			`@${msg.from.username} The Wallpapers topic is only for sharing your Wallpapers, you can't message anything there. If you have a wallpaper, share that, or please refrain from using this Topic. Thanks!`
+		);
+
+		setTimeout(async () => {
+			await deleteMessage(ctx, chat_id, messageToDelete, messageToDelete2);
+		}, 3500);
+	}
+	await checkWallUploads(msg, bot, ctx);
 });
 
 bot.catch((err) => {
-    const ctx = err.ctx;
-    console.error(`Error while handling update ${ctx.update.update_id}:`);
-    const e = err.error;
-    if (e instanceof GrammyError) {
-      console.error("Error in request:", e.description);
-    } else if (e instanceof HttpError) {
-      console.error("Could not contact Telegram:", e);
-    } else {
-      console.error("Unknown error:", e);
-    }
+	const ctx = err.ctx;
+	console.error(`Error while handling update ${ctx.update.update_id}:`);
+	const e = err.error;
+	if (e instanceof GrammyError) {
+		console.error('Error in request:', e.description);
+	} else if (e instanceof HttpError) {
+		console.error('Could not contact Telegram:', e);
+	} else {
+		console.error('Unknown error:', e);
+	}
 });
 
 module.exports = TgBot = bot;
