@@ -5,7 +5,10 @@ const categoryWallsMenu = async (ctx, data) => {
 
 	const category = await Category.findById(category_id).populate({
 		path: 'walls',
-		options: { sort: { file_name: 1 } },
+		options: {
+			sort: { file_name: 1 },
+			collation: { locale: 'en_US', numericOrdering: true },
+		},
 	});
 
 	let editKeyboard = { inline_keyboard: [] };
