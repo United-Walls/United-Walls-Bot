@@ -14,7 +14,7 @@ const checkWallUploads = async (msg, bot, ctx) => {
 		msg.message_thread_id &&
 		msg.message_thread_id == 185847
 	) {
-		if (msg.document?.file_size > 5000000) {
+		if (msg.document?.file_size > 5242880) {
 			console.error('File is more than 5MB!');
 			await bot.api.sendMessage(
 				-1001747180858,

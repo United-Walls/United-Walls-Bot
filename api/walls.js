@@ -11,7 +11,7 @@ Access -    Public
 
 router.get('/', async (req, res) => {
 	try {
-		const walls = await Walls.find().sort({ file_name: 1 }).collation({
+		const walls = await Walls.find().sort({ createdAt: -1 }).collation({
 			locale: 'en_US',
 			numericOrdering: true,
 		});

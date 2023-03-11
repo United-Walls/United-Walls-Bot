@@ -296,7 +296,7 @@ bot.on('message', async (ctx) => {
 	const msg = ctx.message;
 
 	if (
-		'document' in msg == false &&
+		!('document' in msg) &&
 		msg.is_topic_message &&
 		msg.message_thread_id &&
 		msg.message_thread_id == 185847 &&
@@ -316,8 +316,32 @@ bot.on('message', async (ctx) => {
 			await deleteMessage(ctx, chat_id, messageToDelete, messageToDelete2);
 		}, 3500);
 	}
+
+	if (
+		!('photo' in msg) &&
+		msg.is_topic_message &&
+		msg.message_thread_id &&
+		msg.message_thread_id == 185884 &&
+		msg.from.id != 975024565 &&
+		msg.from.id != 1889905927
+	) {
+		messageToDelete2 = 0;
+		messageToDelete = ctx.message.message_id;
+		chat_id = ctx.message.chat.id;
+
+		await ctx.reply(
+			`@${msg.from.username}, if you want to comment on a Setup please forward it into the corresponding group. The Setups topic itself is only for posting setups.`
+		);
+
+		setTimeout(async () => {
+			await deleteMessage(ctx, chat_id, messageToDelete, messageToDelete2);
+		}, 3500);
+	}
 	await checkWallUploads(msg, bot, ctx);
 });
+
+//
+
 
 bot.catch((err) => {
 	const ctx = err.ctx;
