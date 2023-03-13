@@ -50,7 +50,8 @@ bot.command('menu', async (ctx) => {
 	if (
 		ctx.update.message.from.id == 975024565 ||
 		ctx.update.message.from.id == 934949695 ||
-		ctx.update.message.from.id == 1889905927
+		ctx.update.message.from.id == 1889905927 ||
+		ctx.update.message.from.id == 127070302
 	) {
 		await menuMethod(ctx, true, inlineKeyboard);
 	} else {
@@ -73,7 +74,8 @@ bot.callbackQuery('edit-payload', async (ctx) => {
 	if (
 		ctx.update.callback_query.from.id == 975024565 ||
 		ctx.update.callback_query.from.id == 934949695 ||
-		ctx.update.callback_query.from.id == 1889905927
+		ctx.update.callback_query.from.id == 1889905927 ||
+		ctx.update.callback_query.from.id == 127070302
 	) {
 		await categoriesMenu(ctx);
 	} else {
@@ -91,7 +93,8 @@ bot.callbackQuery('go-back-from-edit-payload', async (ctx) => {
 	if (
 		ctx.update.callback_query.from.id == 975024565 ||
 		ctx.update.callback_query.from.id == 934949695 ||
-		ctx.update.callback_query.from.id == 1889905927
+		ctx.update.callback_query.from.id == 1889905927 ||
+		ctx.update.callback_query.from.id == 127070302
 	) {
 		await menuMethod(ctx, false, inlineKeyboard);
 	} else {
@@ -112,7 +115,8 @@ bot.on('callback_query:data', async (ctx) => {
 		if (
 			ctx.update.callback_query.from.id == 975024565 ||
 			ctx.update.callback_query.from.id == 934949695 ||
-			ctx.update.callback_query.from.id == 1889905927
+			ctx.update.callback_query.from.id == 1889905927 ||
+			ctx.update.callback_query.from.id == 127070302
 		) {
 			await categoryWallsMenu(ctx, data);
 		} else {
@@ -128,7 +132,8 @@ bot.on('callback_query:data', async (ctx) => {
 		if (
 			ctx.update.callback_query.from.id == 975024565 ||
 			ctx.update.callback_query.from.id == 934949695 ||
-			ctx.update.callback_query.from.id == 1889905927
+			ctx.update.callback_query.from.id == 1889905927 ||
+			ctx.update.callback_query.from.id == 127070302
 		) {
 			await wallMenu(ctx, data, chat_id);
 		} else {
@@ -144,7 +149,8 @@ bot.on('callback_query:data', async (ctx) => {
 		if (
 			ctx.update.callback_query.from.id == 975024565 ||
 			ctx.update.callback_query.from.id == 934949695 ||
-			ctx.update.callback_query.from.id == 1889905927
+			ctx.update.callback_query.from.id == 1889905927 ||
+			ctx.update.callback_query.from.id == 127070302
 		) {
 			editName = true;
 			wallId = data.split('_')[1];
@@ -172,7 +178,8 @@ bot.on('callback_query:data', async (ctx) => {
 		if (
 			ctx.update.callback_query.from.id == 975024565 ||
 			ctx.update.callback_query.from.id == 934949695 ||
-			ctx.update.callback_query.from.id == 1889905927
+			ctx.update.callback_query.from.id == 1889905927 ||
+			ctx.update.callback_query.from.id == 127070302
 		) {
 			addUploader = true;
 			wallId = data.split('_')[1];
@@ -203,7 +210,8 @@ bot.on('callback_query:data', async (ctx) => {
 		if (
 			ctx.update.callback_query.from.id == 975024565 ||
 			ctx.update.callback_query.from.id == 934949695 ||
-			ctx.update.callback_query.from.id == 1889905927
+			ctx.update.callback_query.from.id == 1889905927 ||
+			ctx.update.callback_query.from.id == 127070302
 		) {
 			const fileName = await deleteWall(data.split('_')[1]);
 
@@ -225,7 +233,8 @@ bot.on('callback_query:data', async (ctx) => {
 		if (
 			ctx.update.callback_query.from.id == 975024565 ||
 			ctx.update.callback_query.from.id == 934949695 ||
-			ctx.update.callback_query.from.id == 1889905927
+			ctx.update.callback_query.from.id == 1889905927 ||
+			ctx.update.callback_query.from.id == 127070302
 		) {
 			wallId = data.split('_')[1];
 
@@ -243,7 +252,8 @@ bot.on('callback_query:data', async (ctx) => {
 		if (
 			ctx.update.callback_query.from.id == 975024565 ||
 			ctx.update.callback_query.from.id == 934949695 ||
-			ctx.update.callback_query.from.id == 1889905927
+			ctx.update.callback_query.from.id == 1889905927 ||
+			ctx.update.callback_query.from.id == 127070302
 		) {
 			await changeCategory(ctx, wallId, data.split('_')[1]);
 			wallId = '';
@@ -301,8 +311,8 @@ bot.on('message', async (ctx) => {
 		msg.message_thread_id &&
 		msg.message_thread_id == 185847 &&
 		msg.from.id != 975024565 &&
-		msg.from.id != 934949695 &&
-		msg.from.id != 1889905927
+		msg.from.id != 1889905927 &&
+		msg.from.id != 127070302
 	) {
 		messageToDelete2 = 0;
 		messageToDelete = ctx.message.message_id;
@@ -323,7 +333,8 @@ bot.on('message', async (ctx) => {
 		msg.message_thread_id &&
 		msg.message_thread_id == 185884 &&
 		msg.from.id != 975024565 &&
-		msg.from.id != 1889905927
+		msg.from.id != 1889905927 &&
+		msg.from.id != 127070302
 	) {
 		messageToDelete2 = 0;
 		messageToDelete = ctx.message.message_id;

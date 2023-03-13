@@ -7,9 +7,12 @@ const checkWallUploads = async (msg, bot, ctx) => {
 		(msg.document?.mime_type == 'image/png' ||
 			msg.document?.mime_type == 'image/jpg' ||
 			msg.document?.mime_type == 'image/jpeg') &&
-		(msg.from.id == 975024565 ||
+		(
+			msg.from.id == 975024565 ||
 			msg.from.id == 934949695 ||
-			msg.from.id == 1889905927) &&
+			msg.from.id == 1889905927 || 
+			msg.from.id == 127070302
+		) &&
 		msg.is_topic_message &&
 		msg.message_thread_id &&
 		msg.message_thread_id == 185847
