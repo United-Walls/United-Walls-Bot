@@ -2,6 +2,7 @@ const express = require('express');
 const Walls = require('../models/Walls');
 const router = express.Router();
 const axios = require('axios');
+const TgBot = require('../TgBot')
 
 /*
 Route -     GET api/walls
@@ -17,12 +18,10 @@ router.get('/', async (req, res) => {
 		});
 		let editedWalls = await Promise.all(
 			walls.map(async (wall) => {
-				const response = await axios.get(
-					`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/getFile?file_id=${wall.file_id}`
-				);
+				const response = await TgBot.api.getFile(wall.file_id);
 				return {
 					...wall._doc,
-					file_url: `https://api.telegram.org/file/bot${process.env.TELEGRAM_BOT_TOKEN}/${response.data.result.file_path}`,
+					file_url: `https://api.telegram.org/file/bot${process.env.TELEGRAM_BOT_TOKEN}/${response.file_path}`,
 				};
 			})
 		);
@@ -48,12 +47,10 @@ Access -    Public
 router.get('/:wall_id', async (req, res) => {
 	try {
 		const wall = await Walls.findById(req.params.wall_id);
-		const response = await axios.get(
-			`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/getFile?file_id=${wall.file_id}`
-		);
+		const response = await TgBot.api.getFile(wall.file_id);
 		return res.json({
 			...wall._doc,
-			file_url: `https://api.telegram.org/file/bot${process.env.TELEGRAM_BOT_TOKEN}/${response.data.result.file_path}`,
+			file_url: `https://api.telegram.org/file/bot${process.env.TELEGRAM_BOT_TOKEN}/${response.file_path}`,
 		});
 	} catch (err) {
 		console.error(err.message);

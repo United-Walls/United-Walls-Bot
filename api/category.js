@@ -24,12 +24,10 @@ router.get('/', async (req, res) => {
 			categories.map(async (category) => {
 				let newWalls = await Promise.all(
 					category.walls.map(async (wall) => {
-						const response = await axios.get(
-							`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/getFile?file_id=${wall.file_id}`
-						);
+						const response = await TgBot.api.getFile(wall.file_id);
 						return {
 							...wall._doc,
-							file_url: `https://api.telegram.org/file/bot${process.env.TELEGRAM_BOT_TOKEN}/${response.data.result.file_path}`,
+							file_url: `https://api.telegram.org/file/bot${process.env.TELEGRAM_BOT_TOKEN}/${response.file_path}`,
 						};
 					})
 				);
@@ -69,12 +67,10 @@ router.get('/:category_id', async (req, res) => {
 		});
 		let newWalls = await Promise.all(
 			category.walls.map(async (wall) => {
-				const response = await axios.get(
-					`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/getFile?file_id=${wall.file_id}`
-				);
+				const response = await TgBot.api.getFile(wall.file_id);
 				return {
 					...wall._doc,
-					file_url: `https://api.telegram.org/file/bot${process.env.TELEGRAM_BOT_TOKEN}/${response.data.result.file_path}`,
+					file_url: `https://api.telegram.org/file/bot${process.env.TELEGRAM_BOT_TOKEN}/${response.file_path}`,
 				};
 			})
 		);
