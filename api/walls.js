@@ -1,8 +1,39 @@
 const express = require('express');
 const Walls = require('../models/Walls');
 const router = express.Router();
-const axios = require('axios');
 const TgBot = require('../TgBot')
+
+/*
+Route -     GET api/walls/update
+Desc -      Get all walls
+Access -    Public
+*/
+
+router.get('/update', async (req, res) => {
+	try {
+		const d = new Date();
+		console.log("Running update \nUpdate Time: " + d.toString())
+		const walls = await Walls.find();
+
+		await Promise.all(
+			walls.map(async (wall) => {
+				const response = await TgBot.api.getFile(wall.file_id);
+				return await Walls.findByIdAndUpdate(wall.id, { file_url: `https://api.telegram.org/file/bot${process.env.TELEGRAM_BOT_TOKEN}/${response.file_path}` });
+			})
+		)
+
+		return
+	} catch (err) {
+		console.error(err.message);
+		res.status(500).json({
+			errors: [
+				{
+					msg: 'WTF did you do now? Fuck you! This is a fucking Server Error, thanks for fucking it up asshole!',
+				},
+			],
+		});
+	}
+});
 
 /*
 Route -     GET api/walls
@@ -16,16 +47,7 @@ router.get('/', async (req, res) => {
 			locale: 'en_US',
 			numericOrdering: true,
 		});
-		let editedWalls = await Promise.all(
-			walls.map(async (wall) => {
-				const response = await TgBot.api.getFile(wall.file_id);
-				return {
-					...wall._doc,
-					file_url: `https://api.telegram.org/file/bot${process.env.TELEGRAM_BOT_TOKEN}/${response.file_path}`,
-				};
-			})
-		);
-		return res.json(editedWalls);
+		return res.json(walls);
 	} catch (err) {
 		console.error(err.message);
 		res.status(500).json({
@@ -47,11 +69,7 @@ Access -    Public
 router.get('/:wall_id', async (req, res) => {
 	try {
 		const wall = await Walls.findById(req.params.wall_id);
-		const response = await TgBot.api.getFile(wall.file_id);
-		return res.json({
-			...wall._doc,
-			file_url: `https://api.telegram.org/file/bot${process.env.TELEGRAM_BOT_TOKEN}/${response.file_path}`,
-		});
+		return res.json(wall);
 	} catch (err) {
 		console.error(err.message);
 		res.status(500).json({

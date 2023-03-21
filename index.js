@@ -4,6 +4,7 @@ const cors = require('cors');
 const mongoose = require('mongoose');
 const TgBot = require('./TgBot');
 require('dotenv').config();
+const axios = require('axios');
 
 const PORT = process.env.PORT || process.env.API_PORT;
 
@@ -19,6 +20,11 @@ app.use('/api/category', require('./api/category'));
 // Create server
 const server = http.createServer(app);
 
+const axiosFunc = () => {
+    axios.get("http://localhost:5002/api/walls/update");
+    setTimeout(axiosFunc, 600000);
+}
+
 // Initialize mongodb instance
 mongoose.set('strictQuery', false)
     .connect(process.env.MONGODB_URI)
@@ -28,6 +34,7 @@ mongoose.set('strictQuery', false)
         });
         TgBot.start();
         console.log(`United Walls Bot has started, Welcome!`);
+        axiosFunc();
     })
     .catch(err => {
         console.log("Database Connection failed. Server has not started.");

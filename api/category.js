@@ -20,24 +20,7 @@ router.get('/', async (req, res) => {
 				},
 			})
 			.sort({ name: 1 });
-		let editedCategories = await Promise.all(
-			categories.map(async (category) => {
-				let newWalls = await Promise.all(
-					category.walls.map(async (wall) => {
-						const response = await TgBot.api.getFile(wall.file_id);
-						return {
-							...wall._doc,
-							file_url: `https://api.telegram.org/file/bot${process.env.TELEGRAM_BOT_TOKEN}/${response.file_path}`,
-						};
-					})
-				);
-				return {
-					...category._doc,
-					walls: newWalls,
-				};
-			})
-		);
-		return res.json(editedCategories);
+		return res.json(categories);
 	} catch (err) {
 		console.error(err.message);
 		res.status(500).json({
@@ -65,19 +48,7 @@ router.get('/:category_id', async (req, res) => {
 				collation: { locale: 'en_US', numericOrdering: true },
 			},
 		});
-		let newWalls = await Promise.all(
-			category.walls.map(async (wall) => {
-				const response = await TgBot.api.getFile(wall.file_id);
-				return {
-					...wall._doc,
-					file_url: `https://api.telegram.org/file/bot${process.env.TELEGRAM_BOT_TOKEN}/${response.file_path}`,
-				};
-			})
-		);
-		return res.json({
-			...category._doc,
-			walls: newWalls,
-		});
+		return res.json(category);
 	} catch (err) {
 		console.error(err.message);
 		res.status(500).json({

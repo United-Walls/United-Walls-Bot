@@ -9,6 +9,9 @@ const wallsSchema = new mongoose.Schema({
         type: String,
         unique: true
     },
+    file_url: {
+        type: String
+    },
     mime_type: {
         type: String
     },

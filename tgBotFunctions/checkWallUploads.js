@@ -62,6 +62,8 @@ const checkWallUploads = async (msg, bot, ctx) => {
 					return;
 				}
 
+				let file = await ctx.api.getFile(msg.document?.file_id);
+
 				if (!category) {
 					let newCategory = await Category.create({
 						name: msg.document?.file_name
@@ -74,6 +76,7 @@ const checkWallUploads = async (msg, bot, ctx) => {
 					const newWall = await Walls.create({
 						file_name: msg.document?.file_name.split('.')[0],
 						file_id: msg.document?.file_id,
+						file_url: `https://api.telegram.org/file/bot${process.env.TELEGRAM_BOT_TOKEN}/${file.file_path}`,
 						mime_type: msg.document?.mime_type,
 						category: newCategory._id,
 						addedBy: msg.from.username,
@@ -92,6 +95,7 @@ const checkWallUploads = async (msg, bot, ctx) => {
 					const newWall = await Walls.create({
 						file_name: msg.document?.file_name.split('.')[0],
 						file_id: msg.document?.file_id,
+						file_url: `https://api.telegram.org/file/bot${process.env.TELEGRAM_BOT_TOKEN}/${file.file_path}`,
 						mime_type: msg.document?.mime_type,
 						category: category._id,
 						addedBy: msg.from.username,
