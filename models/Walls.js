@@ -9,7 +9,14 @@ const wallsSchema = new mongoose.Schema({
         type: String,
         unique: true
     },
+    thumbnail_id: {
+        type: String,
+        unique: true
+    },
     file_url: {
+        type: String
+    },
+    thumbnail_url: {
         type: String
     },
     mime_type: {

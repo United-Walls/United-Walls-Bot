@@ -2,6 +2,13 @@ const Category = require('../models/Category');
 const Walls = require('../models/Walls');
 
 const checkWallUploads = async (msg, bot, ctx) => {
+	if ('document' in msg) {
+		console.log(msg.document);
+		const thumbnail = await bot.api.getFile(msg.document?.thumbnail.file_id);
+		const actualFile = await bot.api.getFile(msg.document?.file_id)
+		console.log("thumbnail", thumbnail);
+		console.log("actualFile", actualFile);
+	}
 	if (
 		'document' in msg &&
 		(msg.document?.mime_type == 'image/png' ||
@@ -63,6 +70,7 @@ const checkWallUploads = async (msg, bot, ctx) => {
 				}
 
 				let file = await ctx.api.getFile(msg.document?.file_id);
+				let thumbnail = await ctx.api.getFile(msg.document?.thumbnail.file_id);
 
 				if (!category) {
 					let newCategory = await Category.create({
@@ -76,10 +84,12 @@ const checkWallUploads = async (msg, bot, ctx) => {
 					const newWall = await Walls.create({
 						file_name: msg.document?.file_name.split('.')[0],
 						file_id: msg.document?.file_id,
+						thumbnail_id: msg.document?.thumbnail.file_id,
 						file_url: `https://api.telegram.org/file/bot${process.env.TELEGRAM_BOT_TOKEN}/${file.file_path}`,
+						thumbnail_url: `https://api.telegram.org/file/bot${process.env.TELEGRAM_BOT_TOKEN}/${thumbnail.file_path}`,
 						mime_type: msg.document?.mime_type,
 						category: newCategory._id,
-						addedBy: msg.from.username,
+						addedBy: msg.from.username
 					});
 
 					await Category.findByIdAndUpdate(newCategory._id, {
@@ -95,10 +105,12 @@ const checkWallUploads = async (msg, bot, ctx) => {
 					const newWall = await Walls.create({
 						file_name: msg.document?.file_name.split('.')[0],
 						file_id: msg.document?.file_id,
+						thumbnail_id: msg.document?.thumbnail.file_id,
 						file_url: `https://api.telegram.org/file/bot${process.env.TELEGRAM_BOT_TOKEN}/${file.file_path}`,
+						thumbnail_url: `https://api.telegram.org/file/bot${process.env.TELEGRAM_BOT_TOKEN}/${thumbnail.file_path}`,
 						mime_type: msg.document?.mime_type,
-						category: category._id,
-						addedBy: msg.from.username,
+						category: newCategory._id,
+						addedBy: msg.from.username
 					});
 
 					await Category.findByIdAndUpdate(category._id, {

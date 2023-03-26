@@ -35,10 +35,10 @@ router.get('/queries', async (req, res) => {
 		const page = req.query.page;
 		const numberOfWalls = 50;
 
-		const walls = await Walls.find().skip(page * numberOfWalls).limit(numberOfWalls).sort({ createdAt: -1 }).collation({
+		const walls = await Walls.find().sort({ createdAt: -1 }).collation({
 			locale: 'en_US',
 			numericOrdering: true,
-		});
+		}).skip(page * numberOfWalls).limit(numberOfWalls);
 
 		return res.json(walls);
 	} catch (err) {
