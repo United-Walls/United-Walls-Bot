@@ -68,7 +68,11 @@ router.get('/update', async (req, res) => {
 		await Promise.all(
 			walls.map(async (wall) => {
 				const response = await TgBot.api.getFile(wall.file_id);
-				return await Walls.findByIdAndUpdate(wall.id, { file_url: `https://api.telegram.org/file/bot${process.env.TELEGRAM_BOT_TOKEN}/${response.file_path}` });
+				const response2 = await TgBot.api.getFile(wall.thumbnail_id);
+				return await Walls.findByIdAndUpdate(wall.id, { 
+					file_url: `https://api.telegram.org/file/bot${process.env.TELEGRAM_BOT_TOKEN}/${response.file_path}`,
+					thumbnail_url: `https://api.telegram.org/file/bot${process.env.TELEGRAM_BOT_TOKEN}/${response2.file_path}`
+				});
 			})
 		)
 
