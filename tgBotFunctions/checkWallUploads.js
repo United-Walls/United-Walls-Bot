@@ -2,13 +2,6 @@ const Category = require('../models/Category');
 const Walls = require('../models/Walls');
 
 const checkWallUploads = async (msg, bot, ctx) => {
-	if ('document' in msg) {
-		console.log(msg.document);
-		const thumbnail = await bot.api.getFile(msg.document?.thumbnail.file_id);
-		const actualFile = await bot.api.getFile(msg.document?.file_id)
-		console.log("thumbnail", thumbnail);
-		console.log("actualFile", actualFile);
-	}
 	if (
 		'document' in msg &&
 		(msg.document?.mime_type == 'image/png' ||
@@ -109,7 +102,7 @@ const checkWallUploads = async (msg, bot, ctx) => {
 						file_url: `https://api.telegram.org/file/bot${process.env.TELEGRAM_BOT_TOKEN}/${file.file_path}`,
 						thumbnail_url: `https://api.telegram.org/file/bot${process.env.TELEGRAM_BOT_TOKEN}/${thumbnail.file_path}`,
 						mime_type: msg.document?.mime_type,
-						category: newCategory._id,
+						category: category._id,
 						addedBy: msg.from.username
 					});
 
@@ -132,7 +125,8 @@ const checkWallUploads = async (msg, bot, ctx) => {
 			}
 		} catch (error) {
 			console.error(error.message);
-			await ctx.reply(
+			await bot.api.sendMessage(
+				-1001747180858,
 				`Error: Hey, @${msg.from.username}, could not save to Database.\n\nYou've become the greatest and the worst person to do this job, that's saying something!`
 			);
 			return;
