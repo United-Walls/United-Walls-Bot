@@ -24,7 +24,9 @@
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
     "grammy": "^1.14.1",
-    "mongoose": "^6.9.2"
+    "http-proxy-middleware": "^2.0.6",
+    "mongoose": "^6.9.2",
+    "morgan": "^1.10.0"
   },
   "devDependencies": {
     "nodemon": "^2.0.20"
