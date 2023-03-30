@@ -79,7 +79,7 @@ router.get('/update', async (req, res) => {
 				const response2 = await TgBot.api.getFile(wall.thumbnail_id);
 				return await Walls.findByIdAndUpdate(wall.id, { 
 					file_url: `http://unitedwalls.paraskcd.com/image/${response.file_path}`,
-					thumbnail_url: `http://unitedwalls.paraskcd.com/image/${response.file_path}`
+					thumbnail_url: `http://unitedwalls.paraskcd.com/image/${response2.file_path}`
 				});
 			})
 		)
