@@ -14,9 +14,12 @@ const PORT = process.env.PORT || process.env.API_PORT;
 const app = express();
 app.use(express.json());
 app.use(cors());
-app.use('/api/walls/image', createProxyMiddleware({
+app.use('/image', createProxyMiddleware({
     target: process.env.TELEGRAM_API_BASE_URL,
     changeOrigin: true,
+    pathRewrite: {
+        "^/image": "",
+    },
 }));
 
 // Define routes

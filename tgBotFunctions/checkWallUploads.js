@@ -78,8 +78,8 @@ const checkWallUploads = async (msg, bot, ctx) => {
 						file_name: msg.document?.file_name.split('.')[0],
 						file_id: msg.document?.file_id,
 						thumbnail_id: msg.document?.thumbnail.file_id,
-						file_url: `https://api.telegram.org/file/bot${process.env.TELEGRAM_BOT_TOKEN}/${file.file_path}`,
-						thumbnail_url: `https://api.telegram.org/file/bot${process.env.TELEGRAM_BOT_TOKEN}/${thumbnail.file_path}`,
+						file_url: `http://unitedwalls.ddns.net:5002/image/${file.file_path}`,
+						thumbnail_url: `http://unitedwalls.ddns.net:5002/image/${thumbnail.file_path}`,
 						mime_type: msg.document?.mime_type,
 						category: newCategory._id,
 						addedBy: msg.from.username
@@ -99,8 +99,8 @@ const checkWallUploads = async (msg, bot, ctx) => {
 						file_name: msg.document?.file_name.split('.')[0],
 						file_id: msg.document?.file_id,
 						thumbnail_id: msg.document?.thumbnail.file_id,
-						file_url: `https://api.telegram.org/file/bot${process.env.TELEGRAM_BOT_TOKEN}/${file.file_path}`,
-						thumbnail_url: `https://api.telegram.org/file/bot${process.env.TELEGRAM_BOT_TOKEN}/${thumbnail.file_path}`,
+						file_url: `http://unitedwalls.ddns.net:5002/image/${file.file_path}`,
+						thumbnail_url: `http://unitedwalls.ddns.net:5002/image/${thumbnail.file_path}`,
 						mime_type: msg.document?.mime_type,
 						category: category._id,
 						addedBy: msg.from.username
