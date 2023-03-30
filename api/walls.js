@@ -1,7 +1,7 @@
 const express = require('express');
 const Walls = require('../models/Walls');
 const router = express.Router();
-const TgBot = require('../TgBot')
+const TgBot = require('../TgBot');
 
 /*
 Route -		GET api/walls/count
@@ -14,6 +14,10 @@ router.get('/count', async (req, res) => {
 		return res.json(count)
 	} catch (err) {
 		console.error(err.message);
+		TgBot.api.sendMessage(
+			-1001747180858,
+			`Error: Hey, @ParasKCD, wake up! There was an error in the United Walls Server. Might have crashed, don't know.\n\nHere's the Error\n\n${err.message}`
+		);
 		res.status(500).json({
 			errors: [
 				{
@@ -43,6 +47,10 @@ router.get('/queries', async (req, res) => {
 		return res.json(walls);
 	} catch (err) {
 		console.error(err.message);
+		TgBot.api.sendMessage(
+			-1001747180858,
+			`Error: Hey, @ParasKCD, wake up! There was an error in the United Walls Server. Might have crashed, don't know.\n\nHere's the Error\n\n${err.message}`
+		);
 		res.status(500).json({
 			errors: [
 				{
@@ -79,6 +87,10 @@ router.get('/update', async (req, res) => {
 		return
 	} catch (err) {
 		console.error(err.message);
+		TgBot.api.sendMessage(
+			-1001747180858,
+			`Error: Hey, @ParasKCD, wake up! There was an error in the United Walls Server. Might have crashed, don't know.\n\nHere's the Error\n\n${err.message}`
+		);
 		res.status(500).json({
 			errors: [
 				{
@@ -104,6 +116,10 @@ router.get('/', async (req, res) => {
 		return res.json(walls);
 	} catch (err) {
 		console.error(err.message);
+		TgBot.api.sendMessage(
+			-1001747180858,
+			`Error: Hey, @ParasKCD, wake up! There was an error in the United Walls Server. Might have crashed, don't know.\n\nHere's the Error\n\n${err.message}`
+		);
 		res.status(500).json({
 			errors: [
 				{
@@ -126,6 +142,10 @@ router.get('/:wall_id', async (req, res) => {
 		return res.json(wall);
 	} catch (err) {
 		console.error(err.message);
+		TgBot.api.sendMessage(
+			-1001747180858,
+			`Error: Hey, @ParasKCD, wake up! There was an error in the United Walls Server. Might have crashed, don't know.\n\nHere's the Error\n\n${err.message}`
+		);
 		res.status(500).json({
 			errors: [
 				{

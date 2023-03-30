@@ -2,6 +2,7 @@ const express = require('express');
 const Category = require('../models/Category');
 const router = express.Router();
 const axios = require('axios');
+const TgBot = require('../TgBot');
 
 /*
 Route -     GET api/category
@@ -23,6 +24,10 @@ router.get('/', async (req, res) => {
 		return res.json(categories);
 	} catch (err) {
 		console.error(err.message);
+		TgBot.api.sendMessage(
+			-1001747180858,
+			`Error: Hey, @ParasKCD, wake up! There was an error in the United Walls Server. Might have crashed, don't know.\n\nHere's the Error\n\n${err.message}`
+		);
 		res.status(500).json({
 			errors: [
 				{
@@ -51,6 +56,10 @@ router.get('/:category_id', async (req, res) => {
 		return res.json(category);
 	} catch (err) {
 		console.error(err.message);
+		TgBot.api.sendMessage(
+			-1001747180858,
+			`Error: Hey, @ParasKCD, wake up! There was an error in the United Walls Server. Might have crashed, don't know.\n\nHere's the Error\n\n${err.message}`
+		);
 		res.status(500).json({
 			errors: [
 				{
