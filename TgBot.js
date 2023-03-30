@@ -354,12 +354,20 @@ bot.on('message', async (ctx) => {
 //
 
 
-bot.catch((err) => {
+bot.catch(async (err) => {
 	const ctx = err.ctx;
-	console.error(`Error while handling update ${ctx.update.update_id}:`);
+	console.error(`Error while handling update ${ctx.update.update_id}`);
+	await bot.api.sendMessage(
+		-1001747180858,
+		`UnitedWalls Bot Error: while handling update ${ctx.update.update_id}:`
+	);
 	const e = err.error;
 	if (e instanceof GrammyError) {
 		console.error('Error in request:', e.description);
+		await bot.api.sendMessage(
+			-1001747180858,
+			`UnitedWalls Bot Error: ${e.description}`
+		);
 	} else if (e instanceof HttpError) {
 		console.error('Could not contact Telegram:', e);
 	} else {
