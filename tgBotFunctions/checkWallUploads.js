@@ -1,5 +1,6 @@
 const Category = require('../models/Category');
 const Walls = require('../models/Walls');
+var fs = require('fs');
 
 const checkWallUploads = async (msg, bot, ctx) => {
 	if (
@@ -65,6 +66,14 @@ const checkWallUploads = async (msg, bot, ctx) => {
 				let file = await ctx.api.getFile(msg.document?.file_id);
 				let thumbnail = await ctx.api.getFile(msg.document?.thumbnail.file_id);
 
+				fs.rename(file.file_path, file.file_path + '.jpg', function(err) {
+					if ( err ) console.log('ERROR: ' + err);
+				});
+
+				fs.rename(thumbnail.file_path, thumbnail.file_path + '.jpg', function(err) {
+					if ( err ) console.log('ERROR: ' + err);
+				});
+
 				if (!category) {
 					let newCategory = await Category.create({
 						name: msg.document?.file_name
@@ -78,8 +87,8 @@ const checkWallUploads = async (msg, bot, ctx) => {
 						file_name: msg.document?.file_name.split('.')[0],
 						file_id: msg.document?.file_id,
 						thumbnail_id: msg.document?.thumbnail.file_id,
-						file_url: `http://unitedwalls.paraskcd.com/image/${file.file_path}`,
-						thumbnail_url: `http://unitedwalls.paraskcd.com/image/${thumbnail.file_path}`,
+						file_url: `http://unitedwalls.paraskcd.com/image/${file.file_path?.split('/')[file.file_path?.split('/').length - 2]}/${file.file_path?.split('/')[file.file_path?.split('/').length - 1]}.jpg`,
+						thumbnail_url: `http://unitedwalls.paraskcd.com/image/${thumbnail.file_path?.split('/')[thumbnail.file_path?.split('/').length - 2]}/${thumbnail.file_path?.split('/')[thumbnail.file_path?.split('/').length - 1]}.jpg`,
 						mime_type: msg.document?.mime_type,
 						category: newCategory._id,
 						addedBy: msg.from.username
@@ -99,8 +108,8 @@ const checkWallUploads = async (msg, bot, ctx) => {
 						file_name: msg.document?.file_name.split('.')[0],
 						file_id: msg.document?.file_id,
 						thumbnail_id: msg.document?.thumbnail.file_id,
-						file_url: `http://unitedwalls.paraskcd.com/image/${file.file_path}`,
-						thumbnail_url: `http://unitedwalls.paraskcd.com/image/${thumbnail.file_path}`,
+						file_url: `http://unitedwalls.paraskcd.com/image/${file.file_path?.split('/')[file.file_path?.split('/').length - 2]}/${file.file_path?.split('/')[file.file_path?.split('/').length - 1]}.jpg`,
+						thumbnail_url: `http://unitedwalls.paraskcd.com/image/${thumbnail.file_path?.split('/')[thumbnail.file_path?.split('/').length - 2]}/${thumbnail.file_path?.split('/')[thumbnail.file_path?.split('/').length - 1]}.jpg`,
 						mime_type: msg.document?.mime_type,
 						category: category._id,
 						addedBy: msg.from.username

@@ -2,6 +2,7 @@ const express = require('express');
 const Walls = require('../models/Walls');
 const router = express.Router();
 const TgBot = require('../TgBot');
+var fs = require('fs');
 
 /*
 Route -		GET api/walls/count
@@ -74,12 +75,21 @@ router.get('/update', async (req, res) => {
 		const walls = await Walls.find();
 
 		await Promise.all(
-			walls.map(async (wall) => {
+			walls.map(async (wall, index) => {
 				const response = await TgBot.api.getFile(wall.file_id);
 				const response2 = await TgBot.api.getFile(wall.thumbnail_id);
+
+				fs.rename(response.file_path, response.file_path + '.jpg', function(err) {
+					if ( err ) console.log('ERROR: ' + err);
+				});
+
+				fs.rename(response2.file_path, response2.file_path + '.jpg', function(err) {
+					if ( err ) console.log('ERROR: ' + err);
+				});
+
 				return await Walls.findByIdAndUpdate(wall.id, { 
-					file_url: `http://unitedwalls.paraskcd.com/image/${response.file_path}`,
-					thumbnail_url: `http://unitedwalls.paraskcd.com/image/${response2.file_path}`
+					file_url: `http://unitedwalls.paraskcd.com/image/${response.file_path?.split('/')[response.file_path?.split('/').length - 2]}/${response.file_path?.split('/')[response.file_path?.split('/').length - 1]}.jpg`,
+					thumbnail_url: `http://unitedwalls.paraskcd.com/image/${response2.file_path?.split('/')[response2.file_path?.split('/').length - 2]}/${response2.file_path?.split('/')[response2.file_path?.split('/').length - 1]}.jpg`
 				});
 			})
 		)
@@ -87,10 +97,6 @@ router.get('/update', async (req, res) => {
 		return
 	} catch (err) {
 		console.error(err.message);
-		TgBot.api.sendMessage(
-			-1001747180858,
-			`Error: Hey, @ParasKCD, wake up! There was an error in the United Walls Server. Might have crashed, don't know.\n\nHere's the Error\n\n${err.message}`
-		);
 		res.status(500).json({
 			errors: [
 				{

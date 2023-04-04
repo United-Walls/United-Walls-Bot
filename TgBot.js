@@ -3,7 +3,11 @@ const Category = require('./models/Category');
 const Walls = require('./models/Walls');
 require('dotenv').config();
 // Create new instance of Bot class, pass your token in the Bot constructor.
-const bot = new Bot(process.env.TELEGRAM_BOT_TOKEN);
+const bot = new Bot(process.env.TELEGRAM_BOT_TOKEN, {
+	client: {
+		apiRoot: "http://10.0.0.72:8081"
+	}
+});
 const menuMethod = require('./tgBotFunctions/menu');
 const unauthorized = require('./tgBotFunctions/unauthorized');
 const deleteMessage = require('./tgBotFunctions/delete');
@@ -357,17 +361,9 @@ bot.on('message', async (ctx) => {
 bot.catch(async (err) => {
 	const ctx = err.ctx;
 	console.error(`Error while handling update ${ctx.update.update_id}`);
-	await bot.api.sendMessage(
-		-1001747180858,
-		`UnitedWalls Bot Error: while handling update ${ctx.update.update_id}:`
-	);
 	const e = err.error;
 	if (e instanceof GrammyError) {
 		console.error('Error in request:', e.description);
-		await bot.api.sendMessage(
-			-1001747180858,
-			`UnitedWalls Bot Error: ${e.description}`
-		);
 	} else if (e instanceof HttpError) {
 		console.error('Could not contact Telegram:', e);
 	} else {

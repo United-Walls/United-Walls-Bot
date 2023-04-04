@@ -1,5 +1,6 @@
 const express = require('express');
 const morgan = require('morgan')
+const path = require('path');
 const { createProxyMiddleware } = require('http-proxy-middleware');
 const http = require('http');
 const cors = require('cors');
@@ -12,15 +13,11 @@ const PORT = process.env.PORT || process.env.API_PORT;
 
 // Create new Express instance
 const app = express();
+
+app.use(express.static("build"));
+app.use('/image', express.static(path.join(__dirname, "storage/data/5921708879~AAFi7OOKSrx5bA6GoHIIOH7U77xjKXAwXUU")));
 app.use(express.json());
 app.use(cors());
-app.use('/image', createProxyMiddleware({
-    target: process.env.TELEGRAM_API_BASE_URL,
-    changeOrigin: true,
-    pathRewrite: {
-        "^/image": "",
-    },
-}));
 
 // Define routes
 app.use('/api/walls', require('./api/walls'));
@@ -31,7 +28,6 @@ const server = http.createServer(app);
 
 const axiosFunc = () => {
     axios.get("http://localhost:5002/api/walls/update");
-    setTimeout(axiosFunc, 600000);
 }
 
 // Initialize mongodb instance
@@ -43,7 +39,6 @@ mongoose.set('strictQuery', false)
         });
         TgBot.start();
         console.log(`United Walls Bot has started, Welcome!`);
-        axiosFunc();
     })
     .catch(err => {
         console.log("Database Connection failed. Server has not started.");

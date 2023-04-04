@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "./static/css/main.e466a024.css",
+    "main.js": "./static/js/main.75066d80.js",
+    "static/media/billiondreams.ttf": "./static/media/billiondreams.c3670514876327a19952.ttf",
+    "static/media/appstore.svg": "./static/media/appstore.8c4986ee4828b47d16f5cd694ef065f2.svg",
+    "index.html": "./index.html",
+    "main.e466a024.css.map": "./static/css/main.e466a024.css.map",
+    "main.75066d80.js.map": "./static/js/main.75066d80.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.e466a024.css",
+    "static/js/main.75066d80.js"
+  ]
+}
