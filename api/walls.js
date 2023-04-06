@@ -3,6 +3,7 @@ const Walls = require('../models/Walls');
 const router = express.Router();
 const TgBot = require('../TgBot');
 var fs = require('fs');
+const Category = require('../models/Category');
 
 /*
 Route -		GET api/walls/count
@@ -87,10 +88,12 @@ router.get('/update', async (req, res) => {
 					if ( err ) console.log('ERROR: ' + err);
 				});
 
-				return await Walls.findByIdAndUpdate(wall.id, { 
+				await Walls.findByIdAndUpdate(wall.id, { 
 					file_url: `http://unitedwalls.paraskcd.com/image/${response.file_path?.split('/')[response.file_path?.split('/').length - 2]}/${response.file_path?.split('/')[response.file_path?.split('/').length - 1]}.jpg`,
 					thumbnail_url: `http://unitedwalls.paraskcd.com/image/${response2.file_path?.split('/')[response2.file_path?.split('/').length - 2]}/${response2.file_path?.split('/')[response2.file_path?.split('/').length - 1]}.jpg`
 				});
+
+				return;
 			})
 		)
 
