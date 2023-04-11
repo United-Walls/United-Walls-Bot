@@ -19,6 +19,14 @@ const wallsSchema = new mongoose.Schema({
     thumbnail_url: {
         type: String
     },
+    timesFavourite: {
+        type: Number,
+        default: 0
+    },
+    timesDownloaded: {
+        type: Number,
+        default: 0
+    },
     mime_type: {
         type: String
     },

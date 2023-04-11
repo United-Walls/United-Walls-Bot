@@ -12,7 +12,7 @@ Access -    Public
 
 router.get('/', async (req, res) => {
 	try {
-		const categories = await Category.find()
+		let categories = await Category.find()
 			.populate({
 				path: 'walls',
 				options: {
@@ -21,6 +21,7 @@ router.get('/', async (req, res) => {
 				},
 			})
 			.sort({ name: 1 });
+		categories = categories.filter((category) => category.walls.length > 14)
 		return res.json(categories);
 	} catch (err) {
 		console.error(err.message);

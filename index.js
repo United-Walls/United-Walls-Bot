@@ -7,15 +7,33 @@ const cors = require('cors');
 const mongoose = require('mongoose');
 const TgBot = require('./TgBot');
 require('dotenv').config();
-const axios = require('axios');
+const swaggerJSDoc = require('swagger-jsdoc');
+const swaggerUi = require('swagger-ui-express');
+
+const swaggerDefinition = {
+  openapi: '3.0.0',
+  info: {
+    title: 'United Walls',
+    version: '1.0.0',
+  },
+};
+
+const options = {
+  swaggerDefinition,
+  // Paths to files containing OpenAPI definitions
+  apis: ['./api/*.js'],
+};
+
+const swaggerSpec = swaggerJSDoc(options);
 
 const PORT = process.env.PORT || process.env.API_PORT;
 
 // Create new Express instance
 const app = express();
 
+app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use(express.static("build"));
-app.use('/image', express.static(path.join(__dirname, "storage/data/5921708879~AAFi7OOKSrx5bA6GoHIIOH7U77xjKXAwXUU")));
+app.use('/image', express.static(path.join(__dirname, "storage/wallpapers")));
 app.use(express.json());
 app.use(cors());
 
@@ -26,9 +44,9 @@ app.use('/api/category', require('./api/category'));
 // Create server
 const server = http.createServer(app);
 
-const axiosFunc = () => {
-    axios.get("http://localhost:5002/api/walls/update");
-}
+// const axiosFunc = () => {
+//     axios.get("http://localhost:5002/api/walls/update");
+// }
 
 // Initialize mongodb instance
 mongoose.set('strictQuery', false)

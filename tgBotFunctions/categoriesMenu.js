@@ -1,7 +1,7 @@
 const Category = require('../models/Category');
 
 const categoriesMenu = async (ctx) => {
-	const allCategories = await Category.find().sort({ file_name: 1 });
+	const allCategories = await Category.find().sort({ name: 1 });
 
 	let editKeyboard = { inline_keyboard: [] };
 	let categoriesMapped = [];

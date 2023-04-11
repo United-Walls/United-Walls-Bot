@@ -66,50 +66,77 @@ const checkWallUploads = async (msg, bot, ctx) => {
 				let file = await ctx.api.getFile(msg.document?.file_id);
 				let thumbnail = await ctx.api.getFile(msg.document?.thumbnail.file_id);
 
-				fs.rename(file.file_path, file.file_path + '.jpg', function(err) {
-					if ( err ) console.log('ERROR: ' + err);
-				});
-
-				fs.rename(thumbnail.file_path, thumbnail.file_path + '.jpg', function(err) {
-					if ( err ) console.log('ERROR: ' + err);
-				});
+				
 
 				if (!category) {
-					let newCategory = await Category.create({
-						name: msg.document?.file_name
-							.split('.')[0]
-							.split('_')[0]
-							.replace(/([A-Z])/g, ' $1')
-							.trim(),
+					fs.mkdir(`/home/paraskcd/United-Walls-Bot/storage/wallpapers/${msg.document?.file_name.split('.')[0].split('_')[0].replace(/([A-Z])/g, ' $1').trim().replace(/\s/g, '')}/thumbnails`, { recursive: true }, async (err) => {
+						if(err) {
+							//note: this does NOT get triggered if the directory already existed
+							console.warn(err)
+						}
+						else{
+							let newCategory = await Category.create({
+								name: msg.document?.file_name
+									.split('.')[0]
+									.split('_')[0]
+									.replace(/([A-Z])/g, ' $1')
+									.trim(),
+							});
+		
+							const newWall = await Walls.create({
+								file_name: msg.document?.file_name.split('.')[0],
+								file_id: msg.document?.file_id,
+								thumbnail_id: msg.document?.thumbnail.file_id,
+								file_url: `http://unitedwalls.paraskcd.com/image/${msg.document?.file_name.split('.')[0].split('_')[0].replace(/([A-Z])/g, ' $1').trim().replace(/\s/g, '')}/${msg.document?.file_name.split('.')[0]}.${msg.document?.mime_type == "image/jpeg" ? "jpg" : "png"}`,
+								thumbnail_url: `http://unitedwalls.paraskcd.com/image/${msg.document?.file_name.split('.')[0].split('_')[0].replace(/([A-Z])/g, ' $1').trim().replace(/\s/g, '')}/thumbnails/${msg.document?.file_name.split('.')[0]}.${msg.document?.mime_type == "image/jpeg" ? "jpg" : "png"}`,
+								mime_type: msg.document?.mime_type,
+								category: newCategory._id,
+								addedBy: msg.from.username
+							});
+		
+							await Category.findByIdAndUpdate(newCategory._id, {
+								$push: { walls: newWall },
+							});
+							
+							fs.rename(file.file_path, `/home/paraskcd/United-Walls-Bot/storage/wallpapers/${msg.document?.file_name.split('.')[0].split('_')[0].replace(/([A-Z])/g, ' $1').trim().replace(/\s/g, '')}/${msg.document?.file_name.split('.')[0]}.${msg.document?.mime_type == "image/jpeg" ? "jpg" : "png"}`, async (err) => {
+								if (err) {
+								  console.error("Error Found: " + err + "\n\n");
+								  await bot.api.sendMessage(
+									-1001747180858,
+									`**Error** - \n\n**New category** - ${newCategory.name} created and added to the database.\n\n**Wallpaper** - ${newWall.file_name} added to database.\n\n**Object id** - ${newWall._id} (for reference).\n\n**Added by** - ${msg.from.username}.\n\nHowever Wall did not save in storage, because of ${err}`
+									);
+								} else {
+									await bot.api.sendMessage(
+										-1001747180858,
+										`**New category** - ${newCategory.name} created and added to the database.\n\n**Wallpaper** - ${newWall.file_name} added to database.\n\n**Object id** - ${newWall._id} (for reference).\n\n**Added by** - ${msg.from.username}.\n\nWallpaper saved in storage as well.`
+									);
+								}
+							});
+			
+							fs.rename(thumbnail.file_path, `/home/paraskcd/United-Walls-Bot/storage/wallpapers/${msg.document?.file_name.split('.')[0].split('_')[0].replace(/([A-Z])/g, ' $1').trim().replace(/\s/g, '')}/thumbnails/${msg.document?.file_name.split('.')[0]}.${msg.document?.mime_type == "image/jpeg" ? "jpg" : "png"}`, async (err) => {
+								if (err) {
+								  console.error("Error Found: " + err + "\n\n");
+								  await bot.api.sendMessage(
+									-1001747180858,
+									`**Error** - \n\n**New category** - ${newCategory.name} created and added to the database.\n\n**Wallpaper** - ${newWall.file_name} added to database.\n\n**Object id** - ${newWall._id} (for reference).\n\n**Added by** - ${msg.from.username}.\n\nHowever Thumbnail did not save in storage, because of ${err}`
+									);
+								} else {
+									await bot.api.sendMessage(
+										-1001747180858,
+										`Thumbnail also saved in storage as well.`
+									);
+								}
+							});
+						}
 					});
-
-					const newWall = await Walls.create({
-						file_name: msg.document?.file_name.split('.')[0],
-						file_id: msg.document?.file_id,
-						thumbnail_id: msg.document?.thumbnail.file_id,
-						file_url: `http://unitedwalls.paraskcd.com/image/${file.file_path?.split('/')[file.file_path?.split('/').length - 2]}/${file.file_path?.split('/')[file.file_path?.split('/').length - 1]}.jpg`,
-						thumbnail_url: `http://unitedwalls.paraskcd.com/image/${thumbnail.file_path?.split('/')[thumbnail.file_path?.split('/').length - 2]}/${thumbnail.file_path?.split('/')[thumbnail.file_path?.split('/').length - 1]}.jpg`,
-						mime_type: msg.document?.mime_type,
-						category: newCategory._id,
-						addedBy: msg.from.username
-					});
-
-					await Category.findByIdAndUpdate(newCategory._id, {
-						$push: { walls: newWall },
-					});
-
-					await bot.api.sendMessage(
-						-1001747180858,
-						`**New category** - ${newCategory.name} created and added to the database.\n\n**Wallpaper** - ${newWall.file_name} added to database.\n\n**Object id** - ${newWall._id} (for reference).\n\n**Added by** - ${msg.from.username}.`
-					);
 					return;
 				} else {
 					const newWall = await Walls.create({
 						file_name: msg.document?.file_name.split('.')[0],
 						file_id: msg.document?.file_id,
 						thumbnail_id: msg.document?.thumbnail.file_id,
-						file_url: `http://unitedwalls.paraskcd.com/image/${file.file_path?.split('/')[file.file_path?.split('/').length - 2]}/${file.file_path?.split('/')[file.file_path?.split('/').length - 1]}.jpg`,
-						thumbnail_url: `http://unitedwalls.paraskcd.com/image/${thumbnail.file_path?.split('/')[thumbnail.file_path?.split('/').length - 2]}/${thumbnail.file_path?.split('/')[thumbnail.file_path?.split('/').length - 1]}.jpg`,
+						file_url: `http://unitedwalls.paraskcd.com/image/${msg.document?.file_name.split('.')[0].split('_')[0].replace(/([A-Z])/g, ' $1').trim().replace(/\s/g, '')}/${msg.document?.file_name.split('.')[0]}.${msg.document?.mime_type == "image/jpeg" ? "jpg" : "png"}`,
+						thumbnail_url: `http://unitedwalls.paraskcd.com/image/${msg.document?.file_name.split('.')[0].split('_')[0].replace(/([A-Z])/g, ' $1').trim().replace(/\s/g, '')}/thumbnails/${msg.document?.file_name.split('.')[0]}.${msg.document?.mime_type == "image/jpeg" ? "jpg" : "png"}`,
 						mime_type: msg.document?.mime_type,
 						category: category._id,
 						addedBy: msg.from.username
@@ -119,10 +146,36 @@ const checkWallUploads = async (msg, bot, ctx) => {
 						$push: { walls: newWall },
 					});
 
-					await bot.api.sendMessage(
-						-1001747180858,
-						`**Wallpaper** - ${newWall.file_name} added to database.\n\n**Category** - ${category.name}.\n\nObject ID - ${newWall._id} (for reference).\n\n**Added by** - ${msg.from.username}.`
-					);
+					fs.rename(file.file_path, `/home/paraskcd/United-Walls-Bot/storage/wallpapers/${msg.document?.file_name.split('.')[0].split('_')[0].replace(/([A-Z])/g, ' $1').trim().replace(/\s/g, '')}/${msg.document?.file_name.split('.')[0]}.${msg.document?.mime_type == "image/jpeg" ? "jpg" : "png"}`, async (err) => {
+						if (err) {
+						  console.error("Error Found:", err);
+						  await bot.api.sendMessage(
+							-1001747180858,
+							`**Error** - \n\n**Wallpaper** - ${newWall.file_name} added to database.\n\n**Category** - ${category.name}.\n\nObject ID - ${newWall._id} (for reference).\n\n**Added by** - ${msg.from.username}.\n\nHowever Wall did not save in storage, because of ${err}`
+							);
+						} else {
+							await bot.api.sendMessage(
+								-1001747180858,
+								`**Wallpaper** - ${newWall.file_name} added to database.\n\n**Category** - ${category.name}.\n\nObject ID - ${newWall._id} (for reference).\n\n**Added by** - ${msg.from.username}.\n\nWallpaper saved in storage as well.`
+							);
+						}
+					});
+	
+					fs.rename(thumbnail.file_path, `/home/paraskcd/United-Walls-Bot/storage/wallpapers/${msg.document?.file_name.split('.')[0].split('_')[0].replace(/([A-Z])/g, ' $1').trim().replace(/\s/g, '')}/thumbnails/${msg.document?.file_name.split('.')[0]}.${msg.document?.mime_type == "image/jpeg" ? "jpg" : "png"}`, async (err) => {
+						if (err) {
+						  console.error("Error Found:", err);
+						  await bot.api.sendMessage(
+							-1001747180858,
+							`**Error** - \n\n**Wallpaper** - ${newWall.file_name} added to database.\n\n**Category** - ${category.name}.\n\nObject ID - ${newWall._id} (for reference).\n\n**Added by** - ${msg.from.username}.\n\nHowever Thumbnail did not save in storage, because of ${err}`
+							);
+						} else {
+							await bot.api.sendMessage(
+								-1001747180858,
+								`Thumbnail also saved in storage as well.`
+							);
+						}
+					});
+					
 					return;
 				}
 			} else {
