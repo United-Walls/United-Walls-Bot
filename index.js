@@ -9,6 +9,8 @@ const TgBot = require('./TgBot');
 require('dotenv').config();
 const swaggerJSDoc = require('swagger-jsdoc');
 const swaggerUi = require('swagger-ui-express');
+const axios = require('axios');
+const WallOfDay = require('./models/WallOfDay');
 
 const swaggerDefinition = {
   openapi: '3.0.0',
@@ -44,9 +46,25 @@ app.use('/api/category', require('./api/category'));
 // Create server
 const server = http.createServer(app);
 
-// const axiosFunc = () => {
-//     axios.get("http://localhost:5002/api/walls/update");
-// }
+function getRandomInt(min, max) {
+  min = Math.ceil(min);
+  max = Math.floor(max);
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+const axiosFunc = async () => {
+  const date = new Date();
+  if (date.getDate() == 1) {
+    await WallOfDay.collection.drop().catch((error) => console.log(error));
+  }
+  const count = await axios.get("http://localhost:5002/api/walls/count");
+  const randomValue = getRandomInt(0, (count.data - 1));
+  const getRandomWall = await axios.get("http://localhost:5002/api/walls/wallOfDay?index=" + randomValue);
+  console.log("Today's Wall is \n", getRandomWall.data);
+  setTimeout(() => {
+    axiosFunc();
+  }, 86400000);
+}
 
 // Initialize mongodb instance
 mongoose.set('strictQuery', false)
@@ -57,6 +75,7 @@ mongoose.set('strictQuery', false)
         });
         TgBot.start();
         console.log(`United Walls Bot has started, Welcome!`);
+        await axiosFunc();
     })
     .catch(err => {
         console.log("Database Connection failed. Server has not started.");

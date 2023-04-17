@@ -4,6 +4,7 @@ const router = express.Router();
 const TgBot = require('../TgBot');
 var fs = require('fs');
 const Category = require('../models/Category');
+const WallOfDay = require('../models/WallOfDay');
 const shuffle = (array) => {
 	let currentIndex = array.length,  randomIndex;
 
@@ -20,6 +21,43 @@ const shuffle = (array) => {
 
 	return array;
 }
+
+/*
+Route -		GET /api/walls/wallOfDay
+Desc -		Get Random Wall of Day (Runs every day)
+Acces -		Public
+*/
+router.get('/wallOfDay', async (req, res) => {
+	try {
+		if (req.query.index) {
+			const index = req.query.index;
+
+			const walls = await Walls.find();
+	
+			const wallByIndex = walls[index];
+	
+			let newWallOfDay = await WallOfDay.create({
+				wall: wallByIndex
+			});
+		}
+
+		const wallOfDay = await WallOfDay.find().populate('wall').sort({ createdAt: -1 });
+		return res.json(wallOfDay[0].wall);
+	} catch (err) {
+		console.error(err.message);
+		TgBot.api.sendMessage(
+			-1001747180858,
+			`Error: Hey, @ParasKCD, wake up! There was an error in the United Walls Server. Might have crashed, don't know.\n\nHere's the Error\n\n${err.message}`
+		);
+		res.status(500).json({
+			errors: [
+				{
+					msg: 'WTF did you do now? Fuck you! This is a fucking Server Error, thanks for fucking it up asshole!',
+				},
+			],
+		});
+	}
+})
 
 /*
 Route -		GET api/walls/mostDownloaded

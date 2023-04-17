@@ -1,15 +1,22 @@
 {
   "files": {
-    "main.css": "./static/css/main.e466a024.css",
-    "main.js": "./static/js/main.75066d80.js",
+    "main.css": "./static/css/main.00451bf8.css",
+    "main.js": "./static/js/main.184510b7.js",
+    "static/media/mockup.png": "./static/media/mockup.1e22fe92414ac7b2f478.png",
+    "static/media/mockup2.png": "./static/media/mockup2.b378cc7bc6f61abb6323.png",
+    "static/media/mockup3.png": "./static/media/mockup3.0adfa2ed2d40b05163c4.png",
     "static/media/billiondreams.ttf": "./static/media/billiondreams.c3670514876327a19952.ttf",
+    "static/media/github.png": "./static/media/github.bee900baf09cef9ad2db.png",
+    "static/media/telegram.png": "./static/media/telegram.5d4516813aae0feca482.png",
+    "static/media/email.png": "./static/media/email.bd9b3d68c410915b337f.png",
+    "static/media/titter.png": "./static/media/titter.4c1c811051707fb77014.png",
     "static/media/appstore.svg": "./static/media/appstore.8c4986ee4828b47d16f5cd694ef065f2.svg",
     "index.html": "./index.html",
-    "main.e466a024.css.map": "./static/css/main.e466a024.css.map",
-    "main.75066d80.js.map": "./static/js/main.75066d80.js.map"
+    "main.00451bf8.css.map": "./static/css/main.00451bf8.css.map",
+    "main.184510b7.js.map": "./static/js/main.184510b7.js.map"
   },
   "entrypoints": [
-    "static/css/main.e466a024.css",
-    "static/js/main.75066d80.js"
+    "static/css/main.00451bf8.css",
+    "static/js/main.184510b7.js"
   ]
 }

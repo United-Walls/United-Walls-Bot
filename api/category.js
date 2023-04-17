@@ -21,7 +21,7 @@ router.get('/', async (req, res) => {
 				},
 			})
 			.sort({ name: 1 });
-		categories = categories.filter((category) => category.walls.length > 14)
+		categories = categories.filter((category) => category.walls.length > 0)
 		return res.json(categories);
 	} catch (err) {
 		console.error(err.message);
