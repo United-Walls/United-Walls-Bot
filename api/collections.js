@@ -77,11 +77,10 @@ router.post("/", async (req, res) => {
                                 .findOne({  name: name });
 
         if (!checkCollection || checkCollection == null || checkCollection == undefined) {
-            const newCollection = await Collections
-                                        .create({
-                                            name: name,
-                                            walls: walls
-                                        });
+            await Collections.create({
+                                name: name,
+                                walls: walls
+                            });
 
             const collection = await Collections.findOne({ name: name }).populate({ path: "walls" });
 
