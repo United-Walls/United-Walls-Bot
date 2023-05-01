@@ -60,6 +60,66 @@ router.get('/wallOfDay', async (req, res) => {
 })
 
 /*
+Route -		GET api/walls/mostLikedWall
+Desc -		Get Most Liked Wall
+Access -	Public
+*/
+
+router.get('/mostLikedWall', async (req, res) => {
+	try {
+		const walls = await Walls.find({ timesFavourite: { $gt: 0 } }).sort({ timesFavourite: -1 }).collation({
+			locale: 'en_US',
+			numericOrdering: true,
+		}).limit(1);
+	
+		return res.json(walls[0]);
+	} catch (err) {
+		console.error(err.message);
+		TgBot.api.sendMessage(
+			-1001747180858,
+			`Error: Hey, @ParasKCD, wake up! There was an error in the United Walls Server. Might have crashed, don't know.\n\nHere's the Error\n\n${err.message}`
+		);
+		res.status(500).json({
+			errors: [
+				{
+					msg: 'WTF did you do now? Fuck you! This is a fucking Server Error, thanks for fucking it up asshole!',
+				},
+			],
+		});
+	}
+})
+
+/*
+Route -		GET api/walls/mostDownloadedWall
+Desc -		Get Most downloaded Wall
+Access -	Public
+*/
+
+router.get('/mostDownloadedWall', async (req, res) => {
+	try {
+		const walls = await Walls.find({ timesDownloaded: { $gt: 0 } }).sort({ timesDownloaded: -1 }).collation({
+			locale: 'en_US',
+			numericOrdering: true,
+		}).limit(1);
+	
+		return res.json(walls[0]);
+	} catch (err) {
+		console.error(err.message);
+		TgBot.api.sendMessage(
+			-1001747180858,
+			`Error: Hey, @ParasKCD, wake up! There was an error in the United Walls Server. Might have crashed, don't know.\n\nHere's the Error\n\n${err.message}`
+		);
+		res.status(500).json({
+			errors: [
+				{
+					msg: 'WTF did you do now? Fuck you! This is a fucking Server Error, thanks for fucking it up asshole!',
+				},
+			],
+		});
+	}
+})
+
+/*
 Route -		GET api/walls/mostDownloaded
 Desc -		Get Most downloaded Walls
 Access - 	Public
