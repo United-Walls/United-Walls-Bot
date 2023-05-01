@@ -1,7 +1,5 @@
 const express = require('express');
-const morgan = require('morgan')
 const path = require('path');
-const { createProxyMiddleware } = require('http-proxy-middleware');
 const http = require('http');
 const cors = require('cors');
 const mongoose = require('mongoose');
@@ -42,6 +40,7 @@ app.use(cors());
 // Define routes
 app.use('/api/walls', require('./api/walls'));
 app.use('/api/category', require('./api/category'));
+app.use('/api/collections', require('./api/collections'));
 
 // Create server
 const server = http.createServer(app);

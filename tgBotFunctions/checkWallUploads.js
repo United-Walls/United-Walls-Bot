@@ -66,8 +66,6 @@ const checkWallUploads = async (msg, bot, ctx) => {
 				let file = await ctx.api.getFile(msg.document?.file_id);
 				let thumbnail = await ctx.api.getFile(msg.document?.thumbnail.file_id);
 
-				
-
 				if (!category) {
 					fs.mkdir(`/home/paraskcd/United-Walls-Bot/storage/wallpapers/${msg.document?.file_name.split('.')[0].split('_')[0].replace(/([A-Z])/g, ' $1').trim().replace(/\s/g, '')}/thumbnails`, { recursive: true }, async (err) => {
 						if(err) {
