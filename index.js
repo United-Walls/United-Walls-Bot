@@ -9,6 +9,7 @@ const swaggerJSDoc = require('swagger-jsdoc');
 const swaggerUi = require('swagger-ui-express');
 const axios = require('axios');
 const WallOfDay = require('./models/WallOfDay');
+const compression = require('compression');
 
 const swaggerDefinition = {
   openapi: '3.0.0',
@@ -31,9 +32,12 @@ const PORT = process.env.PORT || process.env.API_PORT;
 // Create new Express instance
 const app = express();
 
-app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+app.use(compression());
+
 app.use(express.static("build"));
+
 app.use('/image', express.static(path.join(__dirname, "storage/wallpapers")));
+app.use('/uploaders', express.static(path.join(__dirname, "storage/uploaders")));
 app.use(express.json());
 app.use(cors());
 
@@ -41,6 +45,12 @@ app.use(cors());
 app.use('/api/walls', require('./api/walls'));
 app.use('/api/category', require('./api/category'));
 app.use('/api/collections', require('./api/collections'));
+app.use('/api/uploaders', require('./api/uploaders'));
+
+// Handles any requests that don't match the ones above
+app.get('*', (req,res) =>{
+  res.sendFile(path.join(__dirname+'/build/index.html'));
+});
 
 // Create server
 const server = http.createServer(app);

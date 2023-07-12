@@ -1,3 +1,5 @@
+const Walls = require("../models/Walls");
+
 const addUploaderMethod = async (ctx, wallId) => {
 	const uploaderName = ctx.update.message.text;
 

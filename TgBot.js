@@ -1,6 +1,4 @@
 const { Bot, InlineKeyboard, GrammyError, HttpError } = require('grammy');
-const Category = require('./models/Category');
-const Walls = require('./models/Walls');
 require('dotenv').config();
 // Create new instance of Bot class, pass your token in the Bot constructor.
 const bot = new Bot(process.env.TELEGRAM_BOT_TOKEN, {
@@ -20,6 +18,11 @@ const addUploaderMethod = require('./tgBotFunctions/addUploader');
 const deleteWall = require('./tgBotFunctions/deleteWall');
 const editCategoryMenu = require('./tgBotFunctions/editCategoryMenu');
 const changeCategory = require('./tgBotFunctions/changeCategory');
+const addUploaderIDMethod = require('./tgBotFunctions/addUploaderID');
+const Uploader = require('./models/Uploader');
+const uploaderMenuMethod = require('./tgBotFunctions/uploaderMenu');
+const usersMenuMethod = require('./tgBotFunctions/usersMenu');
+const userMenuMethod = require('./tgBotFunctions/userMenu');
 
 // Register listeners below
 // Handle /start command
@@ -35,7 +38,18 @@ bot.command('start', async (ctx) => {
 });
 
 const inlineKeyboard = new InlineKeyboard()
-	.text('Options', 'edit-payload')
+	.text('Wall Categories', 'edit-payload')
+	.row()
+	.text('Your Wallpapers', 'edit-uploader-payload')
+	.row()
+	.text('Add Uploader', 'add-user-payload')
+	.row()
+	.text('Edit Uploaders', 'edit-user-payload')
+	.row()
+	.text('Exit', 'exit-payload');
+
+const inlineUploaderKeyboard = new InlineKeyboard()
+	.text('Your Wallpapers', 'edit-uploader-payload')
 	.row()
 	.text('Exit', 'exit-payload');
 
@@ -44,12 +58,16 @@ let messageToDelete = 0;
 let chat_id = 0;
 let editName = false;
 let addUploader = false;
+let addUploaderID = false;
 let wallId = '';
+let userId = '';
 
 bot.command('menu', async (ctx) => {
 	messageToDelete2 = 0;
 	messageToDelete = ctx.update.message.message_id + 1;
 	chat_id = ctx.update.message.chat.id;
+
+	let uploaderExists = Uploader.find({ userID: ctx.update.message.from.id }).length > 0;
 
 	if (
 		ctx.update.message.from.id == 975024565 ||
@@ -58,6 +76,8 @@ bot.command('menu', async (ctx) => {
 		ctx.update.message.from.id == 127070302
 	) {
 		await menuMethod(ctx, true, inlineKeyboard);
+	} else if (uploaderExists) {
+		await uploaderMenuMethod(ctx, true, inlineUploaderKeyboard);
 	} else {
 		await unauthorized(ctx, chat_id, messageToDelete);
 	}
@@ -65,6 +85,62 @@ bot.command('menu', async (ctx) => {
 
 bot.callbackQuery('exit-payload', async (ctx) => {
 	await deleteMessage(ctx, chat_id, messageToDelete, messageToDelete2);
+});
+
+bot.callbackQuery('add-user-payload', async (ctx) => {
+	await deleteMessage(ctx, chat_id, messageToDelete, messageToDelete2);
+
+	messageToDelete2 = 0;
+	messageToDelete = ctx.update.callback_query.message.message_id + 1;
+
+	chat_id = ctx.update.callback_query.message.chat.id;
+
+	if (
+		ctx.update.callback_query.from.id == 975024565 ||
+		ctx.update.callback_query.from.id == 934949695 ||
+		ctx.update.callback_query.from.id == 1889905927 ||
+		ctx.update.callback_query.from.id == 127070302
+	) {
+		messageToDelete2 = 0;
+		messageToDelete = ctx.update.callback_query.message.message_id + 1;
+		chat_id = ctx.update.callback_query.message.chat.id;
+		addUploaderID = true;
+
+		let editKeyboard = {
+			inline_keyboard: [
+				[{ text: 'Go back', callback_data: 'go-back-from-edit-payload' }],
+				[{ text: 'Exit', callback_data: 'exit-payload' }],
+			],
+		};
+
+		await ctx.reply(
+			'Please enter the ID of the Uploader.',
+			{
+				reply_markup: editKeyboard,
+			}
+		);
+	} else {
+		await unauthorized(ctx, chat_id, messageToDelete);
+	}
+});
+
+bot.callbackQuery('edit-user-payload', async (ctx) => {
+	await deleteMessage(ctx, chat_id, messageToDelete, messageToDelete2);
+
+	messageToDelete2 = 0;
+	messageToDelete = ctx.update.callback_query.message.message_id + 1;
+	chat_id = ctx.update.callback_query.message.chat.id;
+
+	if (
+		ctx.update.callback_query.from.id == 975024565 ||
+		ctx.update.callback_query.from.id == 934949695 ||
+		ctx.update.callback_query.from.id == 1889905927 ||
+		ctx.update.callback_query.from.id == 127070302
+	) {
+		await usersMenuMethod(ctx);
+	} else {
+		await unauthorized(ctx, chat_id, messageToDelete);
+	}
 });
 
 // Wait for click events with specific callback data.
@@ -88,11 +164,16 @@ bot.callbackQuery('edit-payload', async (ctx) => {
 });
 
 bot.callbackQuery('go-back-from-edit-payload', async (ctx) => {
+	addUploaderID = false;
+	editName = false;
+	addUploader = false;
 	await deleteMessage(ctx, chat_id, messageToDelete, messageToDelete2);
 
 	messageToDelete2 = 0;
 	messageToDelete = ctx.update.callback_query.message.message_id + 1;
 	chat_id = ctx.update.callback_query.message.chat.id;
+
+	let uploaderExists = Uploader.find({ userID: ctx.update.callback_query.from.id }).length > 0;
 
 	if (
 		ctx.update.callback_query.from.id == 975024565 ||
@@ -101,6 +182,8 @@ bot.callbackQuery('go-back-from-edit-payload', async (ctx) => {
 		ctx.update.callback_query.from.id == 127070302
 	) {
 		await menuMethod(ctx, false, inlineKeyboard);
+	} else if (uploaderExists) {
+		await uploaderMenuMethod(ctx, false, inlineUploaderKeyboard);
 	} else {
 		await unauthorized(ctx, chat_id, messageToDelete);
 	}
@@ -268,6 +351,25 @@ bot.on('callback_query:data', async (ctx) => {
 			await unauthorized(ctx, chat_id, messageToDelete);
 		}
 	}
+
+	if (data.split('_')[0] == 'Upl') {
+		messageToDelete2 = 0;
+		messageToDelete = ctx.update.callback_query.message.message_id + 1;
+		chat_id = ctx.update.callback_query.message.chat.id;
+
+		if (
+			ctx.update.callback_query.from.id == 975024565 ||
+			ctx.update.callback_query.from.id == 934949695 ||
+			ctx.update.callback_query.from.id == 1889905927 ||
+			ctx.update.callback_query.from.id == 127070302
+		) {
+			userId = data.split('_')[1];
+
+			await userMenuMethod(ctx, userId);
+		} else {
+			await unauthorized(ctx, chat_id, messageToDelete);
+		}
+	}
 });
 
 // Check messages
@@ -300,6 +402,23 @@ bot.on('message', async (ctx) => {
 
 		addUploader = false;
 		wallId = '';
+
+		setTimeout(async () => {
+			await deleteMessage(ctx, chat_id, messageToDelete, messageToDelete2);
+		}, 3500);
+
+		return;
+	}
+
+	if (addUploaderID == true) {
+		await deleteMessage(ctx, chat_id, messageToDelete, messageToDelete2);
+
+		messageToDelete2 = 0;
+		messageToDelete = messageToDelete + 2;
+
+		await addUploaderIDMethod(ctx);
+
+		addUploaderID = false;
 
 		setTimeout(async () => {
 			await deleteMessage(ctx, chat_id, messageToDelete, messageToDelete2);

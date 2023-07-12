@@ -322,90 +322,43 @@ router.get('/removeFav', async (req, res) => {
 	}
 });
 
-// /*
-// Route -     GET api/walls/update
-// Desc -      Get all walls
-// Access -    Public
-// */
+/*
+Route -     GET api/walls/update
+Desc -      Get all walls
+Access -    Public
+*/
 
-// router.get('/update', async (req, res) => {
-// 	try {
-// 		const d = new Date();
-// 		console.log("Running update \nUpdate Time: " + d.toString())
-// 		const walls = await Walls.find();
+router.get('/update', async (req, res) => {
+	try {
+		const d = new Date();
+		console.log("Running update \nUpdate Time: " + d.toString())
+		const walls = await Walls.find();
 
-// 		await Promise.all(
-// 			walls.map(async (wall, index) => {
-// 				const category = await Category.findById(wall.category);
+		await Promise.all(
+			walls.map(async (wall, index) => {
+				const category = await Category.findById(wall.category);
 
-// 				fs.mkdir(`/home/paraskcd/United-Walls-Bot/storage/wallpapers/${category.name.replace(/\s/g, '')}/thumbnails`, { recursive: true }, (err) => {
-// 					if(err) {
-// 						//note: this does NOT get triggered if the directory already existed
-// 						console.warn(err)
-// 					}
-// 					else{
-// 						//directory now exists 
-// 					}
-// 				});
+				await Walls.findByIdAndUpdate(wall.id, { 
+					file_url: `https://unitedwalls.paraskcd.com/image/${category.name.replace(/\s/g, '')}/${wall.file_name}.${wall.mime_type == "image/jpeg" ? "jpg" : "png"}`,
+					thumbnail_url: `https://unitedwalls.paraskcd.com/image/${category.name.replace(/\s/g, '')}/thumbnails/${wall.file_name}.${wall.mime_type == "image/jpeg" ? "jpg" : "png"}`
+				});
 
-// 				const response = await TgBot.api.getFile(wall.file_id);
-// 				const response2 = await TgBot.api.getFile(wall.thumbnail_id);
-				
-// 				if (fs.existsSync(`/home/paraskcd/United-Walls-Bot/storage/wallpapers/${category.name.replace(/\s/g, '')}/${wall.file_name}.${wall.mime_type == "image/jpeg" ? "jpg" : "png"}`)) {
-// 					fs.rm(response.file_path, { recursive:true }, (err) => {
-// 						if(err){
-// 							// File deletion failed
-// 							console.error(err.message);
-// 							return;
-// 						}
-// 						console.log("File deleted successfully");
-// 					});
-// 				} else {
-// 					fs.copyFile(response.file_path, `/home/paraskcd/United-Walls-Bot/storage/wallpapers/${category.name.replace(/\s/g, '')}/${wall.file_name}.${wall.mime_type == "image/jpeg" ? "jpg" : "png"}`, (err) => {
-// 						if (err) {
-// 						  console.log("Error Found:", err);
-// 						}
-// 					});
-// 				}
-				
-// 				if (fs.existsSync(`/home/paraskcd/United-Walls-Bot/storage/wallpapers/${category.name.replace(/\s/g, '')}/thumbnails/${wall.file_name}.${wall.mime_type == "image/jpeg" ? "jpg" : "png"}`)) {
-// 					fs.rm(response2.file_path, { recursive:true }, (err) => {
-// 						if(err){
-// 							// File deletion failed
-// 							console.error(err.message);
-// 							return;
-// 						}
-// 						console.log("File deleted successfully");
-// 					});
-// 				} else {
-// 					fs.copyFile(response2.file_path, `/home/paraskcd/United-Walls-Bot/storage/wallpapers/${category.name.replace(/\s/g, '')}/thumbnails/${wall.file_name}.${wall.mime_type == "image/jpeg" ? "jpg" : "png"}`, (err) => {
-// 						if (err) {
-// 						  console.log("Error Found:", err);
-// 						}
-// 					});
-// 				}
-				
-// 				await Walls.findByIdAndUpdate(wall.id, { 
-// 					file_url: `http://unitedwalls.paraskcd.com/image/${category.name.replace(/\s/g, '')}/${wall.file_name}.${wall.mime_type == "image/jpeg" ? "jpg" : "png"}`,
-// 					thumbnail_url: `http://unitedwalls.paraskcd.com/image/${category.name.replace(/\s/g, '')}/thumbnails/${wall.file_name}.${wall.mime_type == "image/jpeg" ? "jpg" : "png"}`
-// 				});
+				return;
+			})
+		)
 
-// 				return;
-// 			})
-// 		)
-
-// 		return
-// 	} catch (err) {
-// 		console.error(err.message);
-// 		res.status(500).json({
-// 			errors: [
-// 				{
-// 					msg: 'WTF did you do now? Fuck you! This is a fucking Server Error, thanks for fucking it up asshole!',
-// 				},
-// 			],
-// 		});
-// 	}
-// });
+		return
+	} catch (err) {
+		console.error(err.message);
+		res.status(500).json({
+			errors: [
+				{
+					msg: 'WTF did you do now? Fuck you! This is a fucking Server Error, thanks for fucking it up asshole!',
+				},
+			],
+		});
+	}
+});
 
 /*
 Route -     GET api/walls

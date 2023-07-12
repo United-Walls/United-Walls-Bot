@@ -1,22 +1,22 @@
 {
   "files": {
     "main.css": "./static/css/main.00451bf8.css",
-    "main.js": "./static/js/main.db7ad60b.js",
-    "static/media/mockup.png": "./static/media/mockup.1e22fe92414ac7b2f478.png",
-    "static/media/mockup2.png": "./static/media/mockup2.b378cc7bc6f61abb6323.png",
-    "static/media/mockup3.png": "./static/media/mockup3.0adfa2ed2d40b05163c4.png",
+    "main.js": "./static/js/main.86478939.js",
     "static/media/billiondreams.ttf": "./static/media/billiondreams.c3670514876327a19952.ttf",
-    "static/media/github.png": "./static/media/github.bee900baf09cef9ad2db.png",
-    "static/media/telegram.png": "./static/media/telegram.5d4516813aae0feca482.png",
-    "static/media/email.png": "./static/media/email.bd9b3d68c410915b337f.png",
-    "static/media/titter.png": "./static/media/titter.4c1c811051707fb77014.png",
+    "static/media/mockup.webp": "./static/media/mockup.1d27407841534a5792d1.webp",
+    "static/media/mockup2.webp": "./static/media/mockup2.86419bfd8eb41a01ce41.webp",
+    "static/media/github.webp": "./static/media/github.d13d491b09c2ec76f67c.webp",
+    "static/media/email.webp": "./static/media/email.b0cf289dfa69fb0e9501.webp",
+    "static/media/telegram.webp": "./static/media/telegram.21e1a381cf9dd5edf542.webp",
+    "static/media/mockup3.webp": "./static/media/mockup3.3104beda377de25f7ce9.webp",
     "static/media/appstore.svg": "./static/media/appstore.8c4986ee4828b47d16f5cd694ef065f2.svg",
+    "static/media/titter.webp": "./static/media/titter.e2edfba7820216edac95.webp",
     "index.html": "./index.html",
     "main.00451bf8.css.map": "./static/css/main.00451bf8.css.map",
-    "main.db7ad60b.js.map": "./static/js/main.db7ad60b.js.map"
+    "main.86478939.js.map": "./static/js/main.86478939.js.map"
   },
   "entrypoints": [
     "static/css/main.00451bf8.css",
-    "static/js/main.db7ad60b.js"
+    "static/js/main.86478939.js"
   ]
 }
