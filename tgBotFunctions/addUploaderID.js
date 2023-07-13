@@ -8,8 +8,6 @@ const addUploaderIDMethod = async (ctx) => {
         let chatMember = await ctx.api.getChatMember(-1001437820361, parseInt(uploaderID));
         let userPhotos = await ctx.api.getUserProfilePhotos(parseInt(uploaderID), { limit: 1 });
 
-        console.log(userPhotos);
-
         let avatarFile = userPhotos.total_count > 0 ? await ctx.api.getFile(userPhotos.photos[0][1].file_id) : undefined;
 
         if (avatarFile) {

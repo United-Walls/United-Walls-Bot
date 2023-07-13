@@ -103,12 +103,12 @@ const checkWallUploads = async (msg, bot, ctx) => {
 										if (err) {
 										console.error("Error Found: " + err + "\n\n");
 										await bot.api.sendMessage(
-											-1001747180858,
+											-1001731686694,
 											`**Error** - \n\n**New category** - ${newCategory.name} created and added to the database.\n\n**Wallpaper** - ${newWall.file_name} added to database.\n\n**Object id** - ${newWall._id} (for reference).\n\n**Added by** - ${msg.from.username}.\n\nHowever Wall did not save in storage, because of ${err}`, { message_thread_id: 77299 }
 											);
 										} else {
 											await bot.api.sendMessage(
-												-1001747180858,
+												-1001731686694,
 												`**New category** - ${newCategory.name} created and added to the database.\n\n**Wallpaper** - ${newWall.file_name} added to database.\n\n**Object id** - ${newWall._id} (for reference).\n\n**Added by** - ${msg.from.username}.\n\nWallpaper saved in storage as well.`, { message_thread_id: 77299 }
 											);
 										}
@@ -118,13 +118,13 @@ const checkWallUploads = async (msg, bot, ctx) => {
 										if (err) {
 										console.error("Error Found: " + err + "\n\n");
 										await bot.api.sendMessage(
-											-1001747180858,
+											-1001731686694,
 											`**Error** - \n\n**New category** - ${newCategory.name} created and added to the database.\n\n**Wallpaper** - ${newWall.file_name} added to database.\n\n**Object id** - ${newWall._id} (for reference).\n\n**Added by** - ${msg.from.username}.\n\nHowever Thumbnail did not save in storage, because of ${err}`, { message_thread_id: 77299 }, { message_thread_id: 77299 }
 											);
 										} else {
 											await bot.api.sendMessage(
-												-1001747180858,
-												`Thumbnail also saved in storage as well.`
+												-1001731686694,
+												`Thumbnail also saved in storage as well.`, {message_thread_id: 77299}
 											);
 										}
 									});
@@ -155,12 +155,12 @@ const checkWallUploads = async (msg, bot, ctx) => {
 								if (err) {
 								console.error("Error Found:", err);
 								await bot.api.sendMessage(
-									-1001747180858,
+									-1001731686694,
 									`**Error** - \n\n**Wallpaper** - ${newWall.file_name} added to database.\n\n**Category** - ${category.name}.\n\nObject ID - ${newWall._id} (for reference).\n\n**Added by** - ${msg.from.username}.\n\nHowever Wall did not save in storage, because of ${err}`, { message_thread_id: 77299 }
 									);
 								} else {
 									await bot.api.sendMessage(
-										-1001747180858,
+										-1001731686694,
 										`**Wallpaper** - ${newWall.file_name} added to database.\n\n**Category** - ${category.name}.\n\nObject ID - ${newWall._id} (for reference).\n\n**Added by** - ${msg.from.username}.\n\nWallpaper saved in storage as well.`, { message_thread_id: 77299 }
 									);
 								}
@@ -170,13 +170,13 @@ const checkWallUploads = async (msg, bot, ctx) => {
 								if (err) {
 								console.error("Error Found:", err);
 								await bot.api.sendMessage(
-									-1001747180858,
+									-1001731686694,
 									`**Error** - \n\n**Wallpaper** - ${newWall.file_name} added to database.\n\n**Category** - ${category.name}.\n\nObject ID - ${newWall._id} (for reference).\n\n**Added by** - ${msg.from.username}.\n\nHowever Thumbnail did not save in storage, because of ${err}`, { message_thread_id: 77299 }
 									);
 								} else {
 									await bot.api.sendMessage(
-										-1001747180858,
-										`Thumbnail also saved in storage as well.`
+										-1001731686694,
+										`Thumbnail also saved in storage as well.`, { message_thread_id: 77299 }
 									);
 								}
 							});

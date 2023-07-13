@@ -81,6 +81,10 @@ bot.command('menu', async (ctx) => {
 		await menuMethod(ctx, true, inlineKeyboard);
 	} else if (uploaderExists) {
 		const inlineUploaderKeyboard = new InlineKeyboard()
+			.text('Update your Profile (With your Telegram Data', `UUpl_${ctx.update.message.from.id}`)
+			.row()
+			.text('Edit your Profile (Username, image privacy, etc.)', `EUpl_${ctx.update.message.from.id}`)
+			.row()
 			.text('Your Wallpapers', `WUpl_${ctx.update.message.from.id}`)
 			.row()
 			.text('Exit', 'exit-payload');
@@ -204,6 +208,10 @@ bot.callbackQuery('go-back-from-edit-payload', async (ctx) => {
 		await menuMethod(ctx, false, inlineKeyboard);
 	} else if (uploaderExists) {
 		const inlineKeyboard = new InlineKeyboard()
+			.text('Update your Profile (With your Telegram Data', `UUpl_${ctx.update.message.from.id}`)
+			.row()
+			.text('Edit your Profile (Username, image privacy, etc.)', `EUpl_${ctx.update.message.from.id}`)
+			.row()
 			.text('Your Wallpapers', `WUpl_${ctx.update.callback_query.from.id}`)
 			.row()
 			.text('Exit', 'exit-payload');
@@ -241,11 +249,10 @@ bot.on('callback_query:data', async (ctx) => {
 		messageToDelete = ctx.update.callback_query.message.message_id + 1;
 		chat_id = ctx.update.callback_query.message.chat.id;
 
+		let uploader = await Uploader.find({userID: ctx.update.callback_query.from.id});
+
 		if (
-			ctx.update.callback_query.from.id == 975024565 ||
-			ctx.update.callback_query.from.id == 934949695 ||
-			ctx.update.callback_query.from.id == 1889905927 ||
-			ctx.update.callback_query.from.id == 127070302
+			uploader.length > 0
 		) {
 			await wallMenu(ctx, data, chat_id);
 		} else {
@@ -258,11 +265,10 @@ bot.on('callback_query:data', async (ctx) => {
 		messageToDelete = ctx.update.callback_query.message.message_id + 1;
 		chat_id = ctx.update.callback_query.message.chat.id;
 
+		let uploader = await Uploader.find({userID: ctx.update.callback_query.from.id});
+
 		if (
-			ctx.update.callback_query.from.id == 975024565 ||
-			ctx.update.callback_query.from.id == 934949695 ||
-			ctx.update.callback_query.from.id == 1889905927 ||
-			ctx.update.callback_query.from.id == 127070302
+			uploader.length > 0
 		) {
 			editName = true;
 			wallId = data.split('_')[1];
@@ -401,11 +407,10 @@ bot.on('callback_query:data', async (ctx) => {
 		messageToDelete = ctx.update.callback_query.message.message_id + 1;
 		chat_id = ctx.update.callback_query.message.chat.id;
 
+		let uploader = await Uploader.find({userID: ctx.update.callback_query.from.id});
+
 		if (
-			ctx.update.callback_query.from.id == 975024565 ||
-			ctx.update.callback_query.from.id == 934949695 ||
-			ctx.update.callback_query.from.id == 1889905927 ||
-			ctx.update.callback_query.from.id == 127070302
+			uploader.length > 0
 		) {
 			userId = data.split('_')[1];
 
@@ -426,11 +431,10 @@ bot.on('callback_query:data', async (ctx) => {
 		messageToDelete = ctx.update.callback_query.message.message_id + 1;
 		chat_id = ctx.update.callback_query.message.chat.id;
 
+		let uploader = await Uploader.find({userID: ctx.update.callback_query.from.id});
+
 		if (
-			ctx.update.callback_query.from.id == 975024565 ||
-			ctx.update.callback_query.from.id == 934949695 ||
-			ctx.update.callback_query.from.id == 1889905927 ||
-			ctx.update.callback_query.from.id == 127070302
+			uploader.length > 0
 		) {
 			userId = data.split('_')[1];
 
@@ -521,11 +525,10 @@ bot.on('callback_query:data', async (ctx) => {
 		messageToDelete = ctx.update.callback_query.message.message_id + 1;
 		chat_id = ctx.update.callback_query.message.chat.id;
 
+		let uploader = await Uploader.find({userID: ctx.update.callback_query.from.id});
+
 		if (
-			ctx.update.callback_query.from.id == 975024565 ||
-			ctx.update.callback_query.from.id == 934949695 ||
-			ctx.update.callback_query.from.id == 1889905927 ||
-			ctx.update.callback_query.from.id == 127070302
+			uploader.length > 0
 		) {
 			userId = data.split('_')[1];
 
@@ -540,11 +543,10 @@ bot.on('callback_query:data', async (ctx) => {
 		messageToDelete = ctx.update.callback_query.message.message_id + 1;
 		chat_id = ctx.update.callback_query.message.chat.id;
 
+		let uploader = await Uploader.find({userID: ctx.update.callback_query.from.id});
+
 		if (
-			ctx.update.callback_query.from.id == 975024565 ||
-			ctx.update.callback_query.from.id == 934949695 ||
-			ctx.update.callback_query.from.id == 1889905927 ||
-			ctx.update.callback_query.from.id == 127070302
+			uploader.length > 0
 		) {
 			userId = data.split('_')[1];
 			page = data.split('_')[2];
