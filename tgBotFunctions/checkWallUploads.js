@@ -21,8 +21,8 @@ const checkWallUploads = async (msg, bot, ctx) => {
 				if (msg.document?.file_size > 5242880) {
 					console.error('File is more than 5MB!');
 					await bot.api.sendMessage(
-						-1001747180858,
-						`Error: Hey, @${msg.from.username}, Did you check the Size of this file?\n\nLike dude are you blind or something?\n\nThe limit is not more than 5MB, if it is more than this I wont allow your shitty Huge file dude! Now Fuck off!`
+						-1001731686694,
+						`Error: Hey, @${msg.from.username}, Did you check the Size of this file?\n\nLike dude are you blind or something?\n\nThe limit is not more than 5MB, if it is more than this I wont allow your shitty Huge file dude! Now Fuck off!`, { message_thread_id: 77299 }
 					);
 					return;
 				}
@@ -45,8 +45,8 @@ const checkWallUploads = async (msg, bot, ctx) => {
 						if (!msg.document?.file_id) {
 							console.error("File doesn't have an id!");
 							await bot.api.sendMessage(
-								-1001747180858,
-								`Error: Hey, @${msg.from.username}, No ID for file could be fetched, can not save to database.\n\nIt seems like you suck at uploading wallpapers, which is weird because it should be easy to do.`
+								-1001731686694,
+								`Error: Hey, @${msg.from.username}, No ID for file could be fetched, can not save to database.\n\nIt seems like you suck at uploading wallpapers, which is weird because it should be easy to do.`, { message_thread_id: 77299 }
 							);
 							return;
 						}
@@ -54,11 +54,10 @@ const checkWallUploads = async (msg, bot, ctx) => {
 						if (msg.document?.file_name.match(fileNameRegexp) == null) {
 							console.error('Invalid File name');
 							await bot.api.sendMessage(
-								-1001747180858,
+								-1001731686694,
 								`Error: Hey, @${
 									msg.from.username
-								}, Your shitty file name ${msg.document?.file_name.bold()}, is invalid, it should be like SomeName_12345.ext.\n\nIt's no rocket science, I don't know if your parents taught you simple ABCD, but like c'mon, you really suck at this`,
-								{ parse_mode: 'HTML' }
+								}, Your shitty file name ${msg.document?.file_name.bold()}, is invalid, it should be like SomeName_12345.ext.\n\nIt's no rocket science, I don't know if your parents taught you simple ABCD, but like c'mon, you really suck at this`, { message_thread_id: 77299 }
 							);
 							return;
 						}
@@ -105,12 +104,12 @@ const checkWallUploads = async (msg, bot, ctx) => {
 										console.error("Error Found: " + err + "\n\n");
 										await bot.api.sendMessage(
 											-1001747180858,
-											`**Error** - \n\n**New category** - ${newCategory.name} created and added to the database.\n\n**Wallpaper** - ${newWall.file_name} added to database.\n\n**Object id** - ${newWall._id} (for reference).\n\n**Added by** - ${msg.from.username}.\n\nHowever Wall did not save in storage, because of ${err}`
+											`**Error** - \n\n**New category** - ${newCategory.name} created and added to the database.\n\n**Wallpaper** - ${newWall.file_name} added to database.\n\n**Object id** - ${newWall._id} (for reference).\n\n**Added by** - ${msg.from.username}.\n\nHowever Wall did not save in storage, because of ${err}`, { message_thread_id: 77299 }
 											);
 										} else {
 											await bot.api.sendMessage(
 												-1001747180858,
-												`**New category** - ${newCategory.name} created and added to the database.\n\n**Wallpaper** - ${newWall.file_name} added to database.\n\n**Object id** - ${newWall._id} (for reference).\n\n**Added by** - ${msg.from.username}.\n\nWallpaper saved in storage as well.`
+												`**New category** - ${newCategory.name} created and added to the database.\n\n**Wallpaper** - ${newWall.file_name} added to database.\n\n**Object id** - ${newWall._id} (for reference).\n\n**Added by** - ${msg.from.username}.\n\nWallpaper saved in storage as well.`, { message_thread_id: 77299 }
 											);
 										}
 									});
@@ -120,7 +119,7 @@ const checkWallUploads = async (msg, bot, ctx) => {
 										console.error("Error Found: " + err + "\n\n");
 										await bot.api.sendMessage(
 											-1001747180858,
-											`**Error** - \n\n**New category** - ${newCategory.name} created and added to the database.\n\n**Wallpaper** - ${newWall.file_name} added to database.\n\n**Object id** - ${newWall._id} (for reference).\n\n**Added by** - ${msg.from.username}.\n\nHowever Thumbnail did not save in storage, because of ${err}`
+											`**Error** - \n\n**New category** - ${newCategory.name} created and added to the database.\n\n**Wallpaper** - ${newWall.file_name} added to database.\n\n**Object id** - ${newWall._id} (for reference).\n\n**Added by** - ${msg.from.username}.\n\nHowever Thumbnail did not save in storage, because of ${err}`, { message_thread_id: 77299 }, { message_thread_id: 77299 }
 											);
 										} else {
 											await bot.api.sendMessage(
@@ -157,12 +156,12 @@ const checkWallUploads = async (msg, bot, ctx) => {
 								console.error("Error Found:", err);
 								await bot.api.sendMessage(
 									-1001747180858,
-									`**Error** - \n\n**Wallpaper** - ${newWall.file_name} added to database.\n\n**Category** - ${category.name}.\n\nObject ID - ${newWall._id} (for reference).\n\n**Added by** - ${msg.from.username}.\n\nHowever Wall did not save in storage, because of ${err}`
+									`**Error** - \n\n**Wallpaper** - ${newWall.file_name} added to database.\n\n**Category** - ${category.name}.\n\nObject ID - ${newWall._id} (for reference).\n\n**Added by** - ${msg.from.username}.\n\nHowever Wall did not save in storage, because of ${err}`, { message_thread_id: 77299 }
 									);
 								} else {
 									await bot.api.sendMessage(
 										-1001747180858,
-										`**Wallpaper** - ${newWall.file_name} added to database.\n\n**Category** - ${category.name}.\n\nObject ID - ${newWall._id} (for reference).\n\n**Added by** - ${msg.from.username}.\n\nWallpaper saved in storage as well.`
+										`**Wallpaper** - ${newWall.file_name} added to database.\n\n**Category** - ${category.name}.\n\nObject ID - ${newWall._id} (for reference).\n\n**Added by** - ${msg.from.username}.\n\nWallpaper saved in storage as well.`, { message_thread_id: 77299 }
 									);
 								}
 							});
@@ -172,7 +171,7 @@ const checkWallUploads = async (msg, bot, ctx) => {
 								console.error("Error Found:", err);
 								await bot.api.sendMessage(
 									-1001747180858,
-									`**Error** - \n\n**Wallpaper** - ${newWall.file_name} added to database.\n\n**Category** - ${category.name}.\n\nObject ID - ${newWall._id} (for reference).\n\n**Added by** - ${msg.from.username}.\n\nHowever Thumbnail did not save in storage, because of ${err}`
+									`**Error** - \n\n**Wallpaper** - ${newWall.file_name} added to database.\n\n**Category** - ${category.name}.\n\nObject ID - ${newWall._id} (for reference).\n\n**Added by** - ${msg.from.username}.\n\nHowever Thumbnail did not save in storage, because of ${err}`, { message_thread_id: 77299 }
 									);
 								} else {
 									await bot.api.sendMessage(
@@ -186,16 +185,16 @@ const checkWallUploads = async (msg, bot, ctx) => {
 						}
 					} else {
 						await bot.api.sendMessage(
-							-1001747180858,
-							`Error: Hey, @${msg.from.username}, a wallpaper with the same name - ${wall.file_name} whose database document Object ID is ${wall._id} (for reference), is already added to the database.\n\nPlease have some common sense, don't be an idiot and change the name or make sure it's not already added in the Database.`
+							-1001731686694,
+							`Error: Hey, @${msg.from.username}, a wallpaper with the same name - ${wall.file_name} whose database document Object ID is ${wall._id} (for reference), is already added to the database.\n\nPlease have some common sense, don't be an idiot and change the name or make sure it's not already added in the Database.`, { message_thread_id: 77299 }
 						);
 						return;
 					}
 				} catch (error) {
 					console.error(error.message);
 					await bot.api.sendMessage(
-						-1001747180858,
-						`Error: Hey, @${msg.from.username}, could not save to Database.\n\nYou've become the greatest and the worst person to do this job, that's saying something!`
+						-1001731686694,
+						`Error: Hey, @${msg.from.username}, could not save to Database.\n\nYou've become the greatest and the worst person to do this job, that's saying something!`, { message_thread_id: 77299 }
 					);
 					return;
 				}

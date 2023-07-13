@@ -21,8 +21,8 @@ router.get("/", async (req, res) => {
     } catch (err) {
 		console.error(err.message);
 		TgBot.api.sendMessage(
-			-1001747180858,
-			`Error: Hey, @ParasKCD, wake up! There was an error in the United Walls Server. Might have crashed, don't know.\n\nHere's the Error\n\n${err.message}`
+			-1001731686694,
+			`Error: Hey, @ParasKCD, wake up! There was an error in the United Walls Server. Might have crashed, don't know.\n\nHere's the Error\n\n${err.message}`, { message_thread_id: 77299 }
 		);
 		res.status(500).json({
 			errors: [
@@ -50,8 +50,8 @@ router.get('/:id', async (req, res) => {
 	} catch (err) {
 		console.error(err.message);
 		TgBot.api.sendMessage(
-			-1001747180858,
-			`Error: Hey, @ParasKCD, wake up! There was an error in the United Walls Server. Might have crashed, don't know.\n\nHere's the Error\n\n${err.message}`
+			-1001731686694,
+			`Error: Hey, @ParasKCD, wake up! There was an error in the United Walls Server. Might have crashed, don't know.\n\nHere's the Error\n\n${err.message}`, { message_thread_id: 77299 }
 		);
 		res.status(500).json({
 			errors: [
@@ -97,8 +97,8 @@ router.post("/", async (req, res) => {
     } catch (err) {
 		console.error(err.message);
 		TgBot.api.sendMessage(
-			-1001747180858,
-			`Error: Hey, @ParasKCD, wake up! There was an error in the United Walls Server. Might have crashed, don't know.\n\nHere's the Error\n\n${err.message}`
+			-1001731686694,
+			`Error: Hey, @ParasKCD, wake up! There was an error in the United Walls Server. Might have crashed, don't know.\n\nHere's the Error\n\n${err.message}`, { message_thread_id: 77299 }
 		);
 		res.status(500).json({
 			errors: [
@@ -130,8 +130,8 @@ router.post('/deleteWall', async (req, res) => {
     } catch (err) {
 		console.error(err.message);
 		TgBot.api.sendMessage(
-			-1001747180858,
-			`Error: Hey, @ParasKCD, wake up! There was an error in the United Walls Server. Might have crashed, don't know.\n\nHere's the Error\n\n${err.message}`
+			-1001731686694,
+			`Error: Hey, @ParasKCD, wake up! There was an error in the United Walls Server. Might have crashed, don't know.\n\nHere's the Error\n\n${err.message}`, { message_thread_id: 77299 }
 		);
 		res.status(500).json({
 			errors: [
@@ -164,8 +164,8 @@ router.post('/deleteCollection', async (req, res) => {
     } catch (err) {
 		console.error(err.message);
 		TgBot.api.sendMessage(
-			-1001747180858,
-			`Error: Hey, @ParasKCD, wake up! There was an error in the United Walls Server. Might have crashed, don't know.\n\nHere's the Error\n\n${err.message}`
+			-1001731686694,
+			`Error: Hey, @ParasKCD, wake up! There was an error in the United Walls Server. Might have crashed, don't know.\n\nHere's the Error\n\n${err.message}`, { message_thread_id: 77299 }
 		);
 		res.status(500).json({
 			errors: [

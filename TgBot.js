@@ -23,6 +23,12 @@ const Uploader = require('./models/Uploader');
 const uploaderMenuMethod = require('./tgBotFunctions/uploaderMenu');
 const usersMenuMethod = require('./tgBotFunctions/usersMenu');
 const userMenuMethod = require('./tgBotFunctions/userMenu');
+const updateUserMethod = require('./tgBotFunctions/updateUser');
+const editUserMenuMethod = require('./tgBotFunctions/editUserMenu');
+const editUploaderUsernameMethod = require('./tgBotFunctions/editUploaderUsername');
+const removeUploaderPfpMethod = require('./tgBotFunctions/removeUploaderPfp');
+const deleteUserMethod = require('./tgBotFunctions/deleteUser');
+const uploaderWallsMenu = require('./tgBotFunctions/uploaderWallsMenu');
 
 // Register listeners below
 // Handle /start command
@@ -37,22 +43,6 @@ bot.command('start', async (ctx) => {
 	);
 });
 
-const inlineKeyboard = new InlineKeyboard()
-	.text('Wall Categories', 'edit-payload')
-	.row()
-	.text('Your Wallpapers', 'edit-uploader-payload')
-	.row()
-	.text('Add Uploader', 'add-user-payload')
-	.row()
-	.text('Edit Uploaders', 'edit-user-payload')
-	.row()
-	.text('Exit', 'exit-payload');
-
-const inlineUploaderKeyboard = new InlineKeyboard()
-	.text('Your Wallpapers', 'edit-uploader-payload')
-	.row()
-	.text('Exit', 'exit-payload');
-
 let messageToDelete2 = 0;
 let messageToDelete = 0;
 let chat_id = 0;
@@ -61,6 +51,8 @@ let addUploader = false;
 let addUploaderID = false;
 let wallId = '';
 let userId = '';
+let editUploaderName = false;
+let page = 0;
 
 bot.command('menu', async (ctx) => {
 	messageToDelete2 = 0;
@@ -75,8 +67,24 @@ bot.command('menu', async (ctx) => {
 		ctx.update.message.from.id == 1889905927 ||
 		ctx.update.message.from.id == 127070302
 	) {
+		const inlineKeyboard = new InlineKeyboard()
+			.text('Wall Categories', 'edit-payload')
+			.row()
+			.text('Your Wallpapers', `WUpl_${ctx.update.message.from.id}`)
+			.row()
+			.text('Add Uploader', 'add-user-payload')
+			.row()
+			.text('Edit Uploaders', 'edit-user-payload')
+			.row()
+			.text('Exit', 'exit-payload');
+
 		await menuMethod(ctx, true, inlineKeyboard);
 	} else if (uploaderExists) {
+		const inlineUploaderKeyboard = new InlineKeyboard()
+			.text('Your Wallpapers', `WUpl_${ctx.update.message.from.id}`)
+			.row()
+			.text('Exit', 'exit-payload');
+
 		await uploaderMenuMethod(ctx, true, inlineUploaderKeyboard);
 	} else {
 		await unauthorized(ctx, chat_id, messageToDelete);
@@ -167,6 +175,7 @@ bot.callbackQuery('go-back-from-edit-payload', async (ctx) => {
 	addUploaderID = false;
 	editName = false;
 	addUploader = false;
+	editUploaderName = false;
 	await deleteMessage(ctx, chat_id, messageToDelete, messageToDelete2);
 
 	messageToDelete2 = 0;
@@ -181,9 +190,25 @@ bot.callbackQuery('go-back-from-edit-payload', async (ctx) => {
 		ctx.update.callback_query.from.id == 1889905927 ||
 		ctx.update.callback_query.from.id == 127070302
 	) {
+		const inlineKeyboard = new InlineKeyboard()
+			.text('Wall Categories', 'edit-payload')
+			.row()
+			.text('Your Wallpapers', `WUpl_${ctx.update.callback_query.from.id}`)
+			.row()
+			.text('Add Uploader', 'add-user-payload')
+			.row()
+			.text('Edit Uploaders', 'edit-user-payload')
+			.row()
+			.text('Exit', 'exit-payload');
+			
 		await menuMethod(ctx, false, inlineKeyboard);
 	} else if (uploaderExists) {
-		await uploaderMenuMethod(ctx, false, inlineUploaderKeyboard);
+		const inlineKeyboard = new InlineKeyboard()
+			.text('Your Wallpapers', `WUpl_${ctx.update.callback_query.from.id}`)
+			.row()
+			.text('Exit', 'exit-payload');
+
+		await uploaderMenuMethod(ctx, false, inlineKeyboard);
 	} else {
 		await unauthorized(ctx, chat_id, messageToDelete);
 	}
@@ -370,6 +395,165 @@ bot.on('callback_query:data', async (ctx) => {
 			await unauthorized(ctx, chat_id, messageToDelete);
 		}
 	}
+
+	if (data.split('_')[0] == "UUpl") {
+		messageToDelete2 = 0;
+		messageToDelete = ctx.update.callback_query.message.message_id + 1;
+		chat_id = ctx.update.callback_query.message.chat.id;
+
+		if (
+			ctx.update.callback_query.from.id == 975024565 ||
+			ctx.update.callback_query.from.id == 934949695 ||
+			ctx.update.callback_query.from.id == 1889905927 ||
+			ctx.update.callback_query.from.id == 127070302
+		) {
+			userId = data.split('_')[1];
+
+			await updateUserMethod(ctx, userId);
+
+			userId = '';
+			
+			setTimeout(async () => {
+				await deleteMessage(ctx, chat_id, messageToDelete, messageToDelete2);
+			}, 3500);
+		} else {
+			await unauthorized(ctx, chat_id, messageToDelete);
+		}
+	}
+
+	if (data.split('_')[0] == "EUpl") {
+		messageToDelete2 = 0;
+		messageToDelete = ctx.update.callback_query.message.message_id + 1;
+		chat_id = ctx.update.callback_query.message.chat.id;
+
+		if (
+			ctx.update.callback_query.from.id == 975024565 ||
+			ctx.update.callback_query.from.id == 934949695 ||
+			ctx.update.callback_query.from.id == 1889905927 ||
+			ctx.update.callback_query.from.id == 127070302
+		) {
+			userId = data.split('_')[1];
+
+			await editUserMenuMethod(ctx, userId);
+		} else {
+			await unauthorized(ctx, chat_id, messageToDelete);
+		}
+	}
+
+	if (data.split('_')[0] == "EUs") {
+		messageToDelete2 = 0;
+		messageToDelete = ctx.update.callback_query.message.message_id + 1;
+		chat_id = ctx.update.callback_query.message.chat.id;
+
+		if (
+			ctx.update.callback_query.from.id == 975024565 ||
+			ctx.update.callback_query.from.id == 934949695 ||
+			ctx.update.callback_query.from.id == 1889905927 ||
+			ctx.update.callback_query.from.id == 127070302
+		) {
+			editUploaderName = true;
+			userId = data.split('_')[1];
+
+			let editKeyboard = {
+				inline_keyboard: [
+					[{ text: 'Go back', callback_data: `EUpl_${data.split('_')[1]}` }],
+					[{ text: 'Exit', callback_data: 'exit-payload' }],
+				],
+			};
+
+			await ctx.reply('Please enter a new username.', {
+				reply_markup: editKeyboard,
+			});
+		} else {
+			await unauthorized(ctx, chat_id, messageToDelete);
+		}
+	}
+
+	if (data.split('_')[0] == "RPfp") {
+		messageToDelete2 = 0;
+		messageToDelete = ctx.update.callback_query.message.message_id + 1;
+		chat_id = ctx.update.callback_query.message.chat.id;
+
+		if (
+			ctx.update.callback_query.from.id == 975024565 ||
+			ctx.update.callback_query.from.id == 934949695 ||
+			ctx.update.callback_query.from.id == 1889905927 ||
+			ctx.update.callback_query.from.id == 127070302
+		) {
+			userId = data.split('_')[1];
+
+			await removeUploaderPfpMethod(ctx, userId);
+
+			setTimeout(async () => {
+				await deleteMessage(ctx, chat_id, messageToDelete, messageToDelete2);
+			}, 3500);
+		} else {
+			await unauthorized(ctx, chat_id, messageToDelete);
+		}
+	}
+
+	if (data.split('_')[0] == 'DUpl') {
+		messageToDelete2 = 0;
+		messageToDelete = ctx.update.callback_query.message.message_id + 1;
+		chat_id = ctx.update.callback_query.message.chat.id;
+
+		if (
+			ctx.update.callback_query.from.id == 975024565 ||
+			ctx.update.callback_query.from.id == 934949695 ||
+			ctx.update.callback_query.from.id == 1889905927 ||
+			ctx.update.callback_query.from.id == 127070302
+		) {
+			userId = data.split('_')[1];
+
+			await deleteUserMethod(ctx, userId);
+
+			setTimeout(async () => {
+				await deleteMessage(ctx, chat_id, messageToDelete, messageToDelete2);
+			}, 3500);
+		} else {
+			await unauthorized(ctx, chat_id, messageToDelete);
+		}
+	}
+
+	if (data.split('_')[0] == 'WUpl') {
+		page = 0;
+		messageToDelete2 = 0;
+		messageToDelete = ctx.update.callback_query.message.message_id + 1;
+		chat_id = ctx.update.callback_query.message.chat.id;
+
+		if (
+			ctx.update.callback_query.from.id == 975024565 ||
+			ctx.update.callback_query.from.id == 934949695 ||
+			ctx.update.callback_query.from.id == 1889905927 ||
+			ctx.update.callback_query.from.id == 127070302
+		) {
+			userId = data.split('_')[1];
+
+			await uploaderWallsMenu(ctx, userId, page);
+		} else {
+			await unauthorized(ctx, chat_id, messageToDelete);
+		}
+	}
+
+	if (data.split('_')[0] == 'UpW') {
+		messageToDelete2 = 0;
+		messageToDelete = ctx.update.callback_query.message.message_id + 1;
+		chat_id = ctx.update.callback_query.message.chat.id;
+
+		if (
+			ctx.update.callback_query.from.id == 975024565 ||
+			ctx.update.callback_query.from.id == 934949695 ||
+			ctx.update.callback_query.from.id == 1889905927 ||
+			ctx.update.callback_query.from.id == 127070302
+		) {
+			userId = data.split('_')[1];
+			page = data.split('_')[2];
+
+			await uploaderWallsMenu(ctx, userId, page);
+		} else {
+			await unauthorized(ctx, chat_id, messageToDelete);
+		}
+	}
 });
 
 // Check messages
@@ -426,6 +610,25 @@ bot.on('message', async (ctx) => {
 
 		return;
 	}
+
+	if (editUploaderName == true) {
+		await deleteMessage(ctx, chat_id, messageToDelete, messageToDelete2);
+
+		messageToDelete2 = 0;
+		messageToDelete = messageToDelete + 2;
+
+		await editUploaderUsernameMethod(ctx, userId);
+
+		editUploaderName = false;
+		userId = '';
+
+		setTimeout(async () => {
+			await deleteMessage(ctx, chat_id, messageToDelete, messageToDelete2);
+		}, 3500);
+
+		return;
+	}
+	
 	const msg = ctx.message;
 
 	if (

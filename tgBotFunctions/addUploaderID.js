@@ -8,9 +8,9 @@ const addUploaderIDMethod = async (ctx) => {
         let chatMember = await ctx.api.getChatMember(-1001437820361, parseInt(uploaderID));
         let userPhotos = await ctx.api.getUserProfilePhotos(parseInt(uploaderID), { limit: 1 });
 
-        console.log(userPhotos.photos);
+        console.log(userPhotos);
 
-        let avatarFile = userPhotos.photos.count > 0 ? await ctx.api.getFile(userPhotos.photos[0][1].file_id) : undefined;
+        let avatarFile = userPhotos.total_count > 0 ? await ctx.api.getFile(userPhotos.photos[0][1].file_id) : undefined;
 
         if (avatarFile) {
             fs.mkdir(`/home/paraskcd/United-Walls-Bot/storage/uploaders/${chatMember.user.username}`, { recursive: true }, async (err) => {
@@ -19,8 +19,8 @@ const addUploaderIDMethod = async (ctx) => {
                     console.warn(err)
     
                     await ctx.api.sendMessage(
-                        -1001747180858,
-                        `**Error** - \n\nAvatar did not save ${err}`
+                        -1001731686694,
+                        `**Error** - \n\nAvatar did not save ${err}`, { message_thread_id: 77299 }
                     );
                 }
     
@@ -34,13 +34,13 @@ const addUploaderIDMethod = async (ctx) => {
                     if (err) {
                       console.error("Error Found: " + err + "\n\n");
                       await ctx.api.sendMessage(
-                        -1001747180858,
-                        `**Error** - \n\nAvatar did not save ${err}`
+                        -1001731686694,
+                        `**Error** - \n\nAvatar did not save ${err}`, { message_thread_id: 77299 }
                         );
                     } else {
                         await ctx.api.sendMessage(
-                            -1001747180858,
-                            `**New Avatar** - Avatar saved successfully for user ${chatMember.user.username}.`
+                            -1001731686694,
+                            `**New Avatar** - Avatar saved successfully for user ${chatMember.user.username}.`, { message_thread_id: 77299 }
                         );
                     }
                 });
@@ -48,7 +48,8 @@ const addUploaderIDMethod = async (ctx) => {
         } else {
             let newUploader = await Uploader.create({
                 userID: parseInt(uploaderID),
-                username: chatMember.user.username
+                username: chatMember.user.username,
+                avatar_file_url: null
             });
         }
         await ctx.reply('Uploader added - ' + chatMember.user.username);
