@@ -30,6 +30,38 @@ router.get("/", async (req, res) => {
 });
 
 /*
+Route -     GET api/uploaders/wall?wallId=:wallId
+Desc -      Get uploader with wallId
+Access -    Public
+*/
+
+router.get("/wall", async (req, res) => {
+	try {
+		const wallId = req.query.wallId;
+		let uploader = await Uploader.findOne({walls: { $in: [wallId] }});
+
+		if (uploader) {
+			return res.json(uploader);
+		} else {
+			return res.json({});
+		}
+	} catch {
+		console.error(err.message);
+		TgBot.api.sendMessage(
+			-1001731686694,
+			`Error: Hey, @ParasKCD, wake up! There was an error in the United Walls Server. Might have crashed, don't know.\n\nHere's the Error\n\n${err.message}`, { message_thread_id: 77299 }
+		);
+		res.status(500).json({
+			errors: [
+				{
+					msg: 'WTF did you do now? Fuck you! This is a fucking Server Error, thanks for fucking it up asshole!',
+				},
+			],
+		});
+	}
+})
+
+/*
 Route -     GET api/uploaders/walls/queries?userId=:userId&page=:page
 Desc -      Get all walls from uploader
 Access -    Public
