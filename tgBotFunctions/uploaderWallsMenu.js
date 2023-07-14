@@ -4,20 +4,14 @@ const uploaderWallsMenu = async (ctx, userId, page) => {
     let intPage = parseInt(page);
     const numberOfWalls = 16;
 
-    const uploaderWallCount = await Uploader.findOne({userID: userId}).populate({
-		path: 'walls',
-		options: {
-			sort: { createdAt: -1 },
-			collation: { locale: 'en_US', numericOrdering: true },
-		},
-	});
+    const uploaderWallCount = await Uploader.findOne({userID: userId});
 
     const totalNumberOfWalls = uploaderWallCount.walls.length;
 
     const uploader = await Uploader.findOne({userID: userId}).populate({
 		path: 'walls',
 		options: {
-			sort: { file_name: 1 },
+			sort: { createdAt: -1 },
 			collation: { locale: 'en_US', numericOrdering: true },
             skip: page * numberOfWalls,
             limit: numberOfWalls
