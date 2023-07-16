@@ -20,9 +20,8 @@ const checkWallUploads = async (msg, bot, ctx) => {
 			if (uploader.length > 0) {
 				if (msg.document?.file_size > 5242880) {
 					console.error('File is more than 5MB!');
-					await bot.api.sendMessage(
-						-1001731686694,
-						`Error: Hey, @${msg.from.username}, Did you check the Size of this file?\n\nLike dude are you blind or something?\n\nThe limit is not more than 5MB, if it is more than this I wont allow your shitty Huge file dude! Now Fuck off!`, { message_thread_id: 77299 }
+					await ctx.reply(
+						`Error: Hey, @${msg.from.username}, Did you check the Size of this file?\n\nLike dude are you blind or something?\n\nThe limit is not more than 5MB, if it is more than this I wont allow your shitty Huge file dude! Now Fuck off!`
 					);
 					return;
 				}
@@ -44,20 +43,16 @@ const checkWallUploads = async (msg, bot, ctx) => {
 					if (!wall) {
 						if (!msg.document?.file_id) {
 							console.error("File doesn't have an id!");
-							await bot.api.sendMessage(
-								-1001731686694,
-								`Error: Hey, @${msg.from.username}, No ID for file could be fetched, can not save to database.\n\nIt seems like you suck at uploading wallpapers, which is weird because it should be easy to do.`, { message_thread_id: 77299 }
+							await ctx.reply(
+								`Error: Hey, @${msg.from.username}, No ID for file could be fetched, can not save to database.\n\nIt seems like you suck at uploading wallpapers, which is weird because it should be easy to do.`
 							);
 							return;
 						}
 
 						if (msg.document?.file_name.match(fileNameRegexp) == null) {
 							console.error('Invalid File name');
-							await bot.api.sendMessage(
-								-1001731686694,
-								`Error: Hey, @${
-									msg.from.username
-								}, Your shitty file name ${msg.document?.file_name.bold()}, is invalid, it should be like SomeName_12345.ext.\n\nIt's no rocket science, I don't know if your parents taught you simple ABCD, but like c'mon, you really suck at this`, { message_thread_id: 77299 }
+							await ctx.reply(
+								`Error: Hey, @${ msg.from.username }, Your shitty file name ${msg.document?.file_name.bold()}, is invalid, it should be like SomeName_12345.ext.\n\nIt's no rocket science, I don't know if your parents taught you simple ABCD, but like c'mon, you really suck at this`
 							);
 							return;
 						}
@@ -184,17 +179,15 @@ const checkWallUploads = async (msg, bot, ctx) => {
 							return;
 						}
 					} else {
-						await bot.api.sendMessage(
-							-1001731686694,
-							`Error: Hey, @${msg.from.username}, a wallpaper with the same name - ${wall.file_name} whose database document Object ID is ${wall._id} (for reference), is already added to the database.\n\nPlease have some common sense, don't be an idiot and change the name or make sure it's not already added in the Database.`, { message_thread_id: 77299 }
+						await ctx.reply(
+							`Error: Hey, @${msg.from.username}, a wallpaper with the same name - ${wall.file_name} whose database document Object ID is ${wall._id} (for reference), is already added to the database.\n\nPlease have some common sense, don't be an idiot and change the name or make sure it's not already added in the Database.`,
 						);
 						return;
 					}
 				} catch (error) {
 					console.error(error.message);
-					await bot.api.sendMessage(
-						-1001731686694,
-						`Error: Hey, @${msg.from.username}, could not save to Database.\n\nYou've become the greatest and the worst person to do this job, that's saying something!`, { message_thread_id: 77299 }
+					await ctx.reply(
+						`Error: Hey, @${msg.from.username}, could not save to Database.\n\nYou've become the greatest and the worst person to do this job, that's saying something!`,
 					);
 					return;
 				}

@@ -14,6 +14,12 @@ const UploaderSchema = new mongoose.Schema({
     avatar_file_url: {
         type: String
     },
+    avatar_uuid: {
+        type: String
+    },
+    avatar_mime_type: {
+        type: String
+    },
     walls: [
         {
             type: mongoose.Schema.Types.ObjectId,

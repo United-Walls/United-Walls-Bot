@@ -29,6 +29,7 @@ const editUploaderUsernameMethod = require('./tgBotFunctions/editUploaderUsernam
 const removeUploaderPfpMethod = require('./tgBotFunctions/removeUploaderPfp');
 const deleteUserMethod = require('./tgBotFunctions/deleteUser');
 const uploaderWallsMenu = require('./tgBotFunctions/uploaderWallsMenu');
+const addAvatarMethod = require('./tgBotFunctions/addAvatar');
 
 // Register listeners below
 // Handle /start command
@@ -53,6 +54,7 @@ let wallId = '';
 let userId = '';
 let editUploaderName = false;
 let page = 0;
+let addAvatar = false;
 
 bot.command('menu', async (ctx) => {
 	messageToDelete2 = 0;
@@ -69,6 +71,10 @@ bot.command('menu', async (ctx) => {
 	) {
 		const inlineKeyboard = new InlineKeyboard()
 			.text('Wall Categories', 'edit-payload')
+			.row()
+			.text('Update your Profile (With your Telegram Data', `UUpl_${ctx.update.message.from.id}`)
+			.row()
+			.text('Edit your Profile (Username, image privacy, etc.)', `EUpl_${ctx.update.message.from.id}`)
 			.row()
 			.text('Your Wallpapers', `WUpl_${ctx.update.message.from.id}`)
 			.row()
@@ -180,6 +186,7 @@ bot.callbackQuery('go-back-from-edit-payload', async (ctx) => {
 	editName = false;
 	addUploader = false;
 	editUploaderName = false;
+	addAvatar = false;
 	await deleteMessage(ctx, chat_id, messageToDelete, messageToDelete2);
 
 	messageToDelete2 = 0;
@@ -196,6 +203,10 @@ bot.callbackQuery('go-back-from-edit-payload', async (ctx) => {
 	) {
 		const inlineKeyboard = new InlineKeyboard()
 			.text('Wall Categories', 'edit-payload')
+			.row()
+			.text('Update your Profile (With your Telegram Data', `UUpl_${ctx.update.message.from.id}`)
+			.row()
+			.text('Edit your Profile (Username, image privacy, etc.)', `EUpl_${ctx.update.message.from.id}`)
 			.row()
 			.text('Your Wallpapers', `WUpl_${ctx.update.callback_query.from.id}`)
 			.row()
@@ -406,14 +417,13 @@ bot.on('callback_query:data', async (ctx) => {
 		messageToDelete2 = 0;
 		messageToDelete = ctx.update.callback_query.message.message_id + 1;
 		chat_id = ctx.update.callback_query.message.chat.id;
+		userId = data.split('_')[1];
 
-		let uploader = await Uploader.find({userID: ctx.update.callback_query.from.id});
+		let uploader = await Uploader.find({userID: userId});
 
 		if (
 			uploader.length > 0
 		) {
-			userId = data.split('_')[1];
-
 			await updateUserMethod(ctx, userId);
 
 			userId = '';
@@ -430,15 +440,15 @@ bot.on('callback_query:data', async (ctx) => {
 		messageToDelete2 = 0;
 		messageToDelete = ctx.update.callback_query.message.message_id + 1;
 		chat_id = ctx.update.callback_query.message.chat.id;
+		userId = data.split('_')[1];
 
-		let uploader = await Uploader.find({userID: ctx.update.callback_query.from.id});
+		let uploader = await Uploader.find({userID: userId});
 
 		if (
 			uploader.length > 0
 		) {
-			userId = data.split('_')[1];
-
 			await editUserMenuMethod(ctx, userId);
+			userId = '';
 		} else {
 			await unauthorized(ctx, chat_id, messageToDelete);
 		}
@@ -448,15 +458,13 @@ bot.on('callback_query:data', async (ctx) => {
 		messageToDelete2 = 0;
 		messageToDelete = ctx.update.callback_query.message.message_id + 1;
 		chat_id = ctx.update.callback_query.message.chat.id;
+		userId = data.split('_')[1];
+		let uploader = await Uploader.find({userID: userId});
 
 		if (
-			ctx.update.callback_query.from.id == 975024565 ||
-			ctx.update.callback_query.from.id == 934949695 ||
-			ctx.update.callback_query.from.id == 1889905927 ||
-			ctx.update.callback_query.from.id == 127070302
+			uploader.length > 0
 		) {
 			editUploaderName = true;
-			userId = data.split('_')[1];
 
 			let editKeyboard = {
 				inline_keyboard: [
@@ -468,6 +476,8 @@ bot.on('callback_query:data', async (ctx) => {
 			await ctx.reply('Please enter a new username.', {
 				reply_markup: editKeyboard,
 			});
+
+			userId = '';
 		} else {
 			await unauthorized(ctx, chat_id, messageToDelete);
 		}
@@ -477,17 +487,15 @@ bot.on('callback_query:data', async (ctx) => {
 		messageToDelete2 = 0;
 		messageToDelete = ctx.update.callback_query.message.message_id + 1;
 		chat_id = ctx.update.callback_query.message.chat.id;
+		userId = data.split('_')[1];
+		let uploader = await Uploader.find({userID: userId});
 
 		if (
-			ctx.update.callback_query.from.id == 975024565 ||
-			ctx.update.callback_query.from.id == 934949695 ||
-			ctx.update.callback_query.from.id == 1889905927 ||
-			ctx.update.callback_query.from.id == 127070302
+			uploader.length > 0
 		) {
-			userId = data.split('_')[1];
-
 			await removeUploaderPfpMethod(ctx, userId);
 
+			userId = '';
 			setTimeout(async () => {
 				await deleteMessage(ctx, chat_id, messageToDelete, messageToDelete2);
 			}, 3500);
@@ -500,6 +508,7 @@ bot.on('callback_query:data', async (ctx) => {
 		messageToDelete2 = 0;
 		messageToDelete = ctx.update.callback_query.message.message_id + 1;
 		chat_id = ctx.update.callback_query.message.chat.id;
+		userId = data.split('_')[1];
 
 		if (
 			ctx.update.callback_query.from.id == 975024565 ||
@@ -507,10 +516,9 @@ bot.on('callback_query:data', async (ctx) => {
 			ctx.update.callback_query.from.id == 1889905927 ||
 			ctx.update.callback_query.from.id == 127070302
 		) {
-			userId = data.split('_')[1];
-
 			await deleteUserMethod(ctx, userId);
 
+			userId = '';
 			setTimeout(async () => {
 				await deleteMessage(ctx, chat_id, messageToDelete, messageToDelete2);
 			}, 3500);
@@ -524,15 +532,15 @@ bot.on('callback_query:data', async (ctx) => {
 		messageToDelete2 = 0;
 		messageToDelete = ctx.update.callback_query.message.message_id + 1;
 		chat_id = ctx.update.callback_query.message.chat.id;
+		userId = data.split('_')[1];
 
-		let uploader = await Uploader.find({userID: ctx.update.callback_query.from.id});
+		let uploader = await Uploader.find({userID: userId});
 
 		if (
 			uploader.length > 0
 		) {
-			userId = data.split('_')[1];
-
 			await uploaderWallsMenu(ctx, userId, page);
+			userId = '';
 		} else {
 			await unauthorized(ctx, chat_id, messageToDelete);
 		}
@@ -542,16 +550,42 @@ bot.on('callback_query:data', async (ctx) => {
 		messageToDelete2 = 0;
 		messageToDelete = ctx.update.callback_query.message.message_id + 1;
 		chat_id = ctx.update.callback_query.message.chat.id;
+		userId = data.split('_')[1];
 
-		let uploader = await Uploader.find({userID: ctx.update.callback_query.from.id});
+		let uploader = await Uploader.find({userID: userId});
 
 		if (
 			uploader.length > 0
 		) {
-			userId = data.split('_')[1];
 			page = data.split('_')[2];
 
 			await uploaderWallsMenu(ctx, userId, page);
+		} else {
+			await unauthorized(ctx, chat_id, messageToDelete);
+		}
+	}
+
+	if (data.split('_')[0] == 'Av') {
+		messageToDelete2 = 0;
+		messageToDelete = ctx.update.callback_query.message.message_id + 1;
+		chat_id = ctx.update.callback_query.message.chat.id;
+		userId = data.split('_')[1];
+
+		let uploader = await Uploader.find({userID: userId});
+
+		if (uploader.length > 0) {
+			addAvatar = true;
+
+			let editKeyboard = {
+				inline_keyboard: [
+					[{ text: 'Go back', callback_data: `EUpl_${data.split('_')[1]}` }],
+					[{ text: 'Exit', callback_data: 'exit-payload' }],
+				],
+			};
+
+			await ctx.reply('Please upload a new Profile Pic to show in United Walls. The Picture should be either png or jpg, and should be around 320px - 320px square dimension. Should be in the form of a Document/File and not compressed photo.', {
+				reply_markup: editKeyboard,
+			});
 		} else {
 			await unauthorized(ctx, chat_id, messageToDelete);
 		}
@@ -560,6 +594,23 @@ bot.on('callback_query:data', async (ctx) => {
 
 // Check messages
 bot.on('message', async (ctx) => {
+	if (addAvatar == true) {
+		await deleteMessage(ctx, chat_id, messageToDelete, messageToDelete2);
+
+		messageToDelete2 = 0;
+		messageToDelete = messageToDelete + 2;
+
+		await addAvatarMethod(ctx);
+
+		addAvatar = false;
+
+		setTimeout(async () => {
+			await deleteMessage(ctx, chat_id, messageToDelete, messageToDelete2);
+		}, 3500);
+
+		return;
+	}
+
 	if (editName == true) {
 		await deleteMessage(ctx, chat_id, messageToDelete, messageToDelete2);
 

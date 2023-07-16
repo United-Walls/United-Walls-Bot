@@ -1,4 +1,6 @@
 const Uploader = require("../models/Uploader");
+const { v4: uuidv4 } = require('uuid');
+const uuid = uuidv4();
 var fs = require('fs');
 
 const addUploaderIDMethod = async (ctx) => {
@@ -25,10 +27,10 @@ const addUploaderIDMethod = async (ctx) => {
                 let newUploader = await Uploader.create({
                     userID: parseInt(uploaderID),
                     username: chatMember.user.username,
-                    avatar_file_url: `https://unitedwalls.paraskcd.com/uploaders/${chatMember.user.username}/${chatMember.user.username}-Avatar.jpg`
+                    avatar_file_url: `https://unitedwalls.paraskcd.com/uploaders/${chatMember.user.username}/${uuid}.jpg`
                 });
     
-                fs.rename(avatarFile.file_path, `/home/paraskcd/United-Walls-Bot/storage/uploaders/${chatMember.user.username}/${chatMember.user.username}-Avatar.jpg`, async (err) => {
+                fs.rename(avatarFile.file_path, `/home/paraskcd/United-Walls-Bot/storage/uploaders/${chatMember.user.username}/${uuid}.jpg`, async (err) => {
                     if (err) {
                       console.error("Error Found: " + err + "\n\n");
                       await ctx.api.sendMessage(

@@ -9,6 +9,7 @@ const editUserMenuMethod = async (ctx, userId) => {
         editKeyboard = {
             inline_keyboard: [
                 [{ text: 'Edit username', callback_data: `EUs_${userId}`}],
+                [{ text: 'Add Avatar (can be your logo, profile pic, etc)', callback_data: `Av_${userId}`}],
                 [{ text: 'Go back', callback_data: `Upl_${userId}` }],
                 [{ text: 'Exit', callback_data: 'exit-payload' }],
             ],
@@ -17,6 +18,7 @@ const editUserMenuMethod = async (ctx, userId) => {
         editKeyboard = {
             inline_keyboard: [
                 [{ text: 'Edit username', callback_data: `EUs_${userId}`}],
+                [{ text: 'Change Avatar (can be your logo, profile pic, etc)', callback_data: `Av_${userId}`}],
                 [{ text: 'Remove Profile Picture', callback_data: `RPfp_${userId}`}],
                 [{ text: 'Go back', callback_data: `Upl_${userId}` }],
                 [{ text: 'Exit', callback_data: 'exit-payload' }],
