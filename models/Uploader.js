@@ -20,6 +20,9 @@ const UploaderSchema = new mongoose.Schema({
     avatar_mime_type: {
         type: String
     },
+    password: {
+        type: String
+    },
     walls: [
         {
             type: mongoose.Schema.Types.ObjectId,

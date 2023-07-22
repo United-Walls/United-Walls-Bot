@@ -79,7 +79,7 @@ router.get("/walls/count", async (req, res) => {
 		const categoryId = req.query.categoryId;
 		const category = await Category.findById(categoryId);
 		return res.json(category.walls.length);
-	} catch {
+	} catch(err) {
 		console.error(err.message);
 		TgBot.api.sendMessage(
 			-1001731686694,

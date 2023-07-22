@@ -1,4 +1,5 @@
 const Uploader = require("../models/Uploader")
+var fs = require('fs');
 
 const removeUploaderPfpMethod = async (ctx, userId) => {
     const beforeDeleteUploader = await Uploader.findOne({userID: userId});

@@ -27,21 +27,21 @@ const updateUserMethod = async (ctx, userId) => {
 
                 await ctx.api.sendMessage(
                     -1001731686694,
-                    `**Error** - \n\nAvatar did not save ${err}`, { message_thread_id: 77299 }
+                    `<b>Error</b> - <br><br>Avatar did not save <br><br><pre>${err}</pre>`, { message_thread_id: 77299, parse_mode: 'HTML' }
                 );
             }
 
             fs.rename(avatarFile.file_path, `/home/paraskcd/United-Walls-Bot/storage/uploaders/${chatMember.user.username}/${uuid}.jpg`, async (err) => {
                 if (err) {
-                  console.error("Error Found: " + err + "\n\n");
-                  await ctx.api.sendMessage(
-                    -1001731686694,
-                    `**Error** - \n\nAvatar did not save ${err}`,{ message_thread_id: 77299 }
+                    console.error("Error Found: " + err + "\n\n");
+                    await ctx.api.sendMessage(
+                        -1001731686694,
+                        `<b>Error</b> - <br><br>Avatar did not save <br><br><pre>${err}</pre>`, { message_thread_id: 77299, parse_mode: 'HTML' }
                     );
                 } else {
                     await ctx.api.sendMessage(
                         -1001731686694,
-                        `**New Avatar** - Avatar saved successfully for user ${chatMember.user.username}.`, { message_thread_id: 77299 }
+                        `<b>New Avatar</b> - <br><br>Avatar saved successfully for user ${chatMember.user.username}.`, { message_thread_id: 77299, parse_mode: 'HTML' }
                     );
 
                     await ctx.reply('Avatar Picture changed for - ' + chatMember.user.username);

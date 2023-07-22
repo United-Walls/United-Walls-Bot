@@ -99,12 +99,12 @@ const checkWallUploads = async (msg, bot, ctx) => {
 										console.error("Error Found: " + err + "\n\n");
 										await bot.api.sendMessage(
 											-1001731686694,
-											`**Error** - \n\n**New category** - ${newCategory.name} created and added to the database.\n\n**Wallpaper** - ${newWall.file_name} added to database.\n\n**Object id** - ${newWall._id} (for reference).\n\n**Added by** - ${msg.from.username}.\n\nHowever Wall did not save in storage, because of ${err}`, { message_thread_id: 77299 }
+												`<b>Error</b> - <br><br><b>New category</b> - ${newCategory.name} created and added to the database.<br><br><b>Wallpaper</b> - ${newWall.file_name} added to database.<br><br><b>Object id</b> - ${newWall._id} (for reference).<br><br><b>Added by</b> - ${msg.from.username}.<br><br>However Wall did not save in storage, because of <br><br><pre>${err}</pre>`, { message_thread_id: 77299, parse_mode: 'HTML' }
 											);
 										} else {
 											await bot.api.sendMessage(
 												-1001731686694,
-												`**New category** - ${newCategory.name} created and added to the database.\n\n**Wallpaper** - ${newWall.file_name} added to database.\n\n**Object id** - ${newWall._id} (for reference).\n\n**Added by** - ${msg.from.username}.\n\nWallpaper saved in storage as well.`, { message_thread_id: 77299 }
+												`<b>New category</b> - ${newCategory.name} created and added to the database.<br><br><b>Wallpaper</b> - ${newWall.file_name} added to database.<br><br><b>Object id</b> - ${newWall._id} (for reference).<br><br><b>Added by</b> - ${msg.from.username}.<br><br>Wallpaper saved in storage as well<br><br>.`, { message_thread_id: 77299, parse_mode: 'HTML' }
 											);
 										}
 									});
@@ -114,7 +114,7 @@ const checkWallUploads = async (msg, bot, ctx) => {
 										console.error("Error Found: " + err + "\n\n");
 										await bot.api.sendMessage(
 											-1001731686694,
-											`**Error** - \n\n**New category** - ${newCategory.name} created and added to the database.\n\n**Wallpaper** - ${newWall.file_name} added to database.\n\n**Object id** - ${newWall._id} (for reference).\n\n**Added by** - ${msg.from.username}.\n\nHowever Thumbnail did not save in storage, because of ${err}`, { message_thread_id: 77299 }, { message_thread_id: 77299 }
+												`<b>Error</b> - <br><br><b>New category</b> - ${newCategory.name} created and added to the database.<br><br><b>Wallpaper</b> - ${newWall.file_name} added to database.<br><br><b>Object id</b> - ${newWall._id} (for reference).<br><br><b>Added by</b> - ${msg.from.username}.<br><br>However Thumbnail did not save in storage, because of <br><br><pre>${err}</pre>`, { message_thread_id: 77299, parse_mode: 'HTML' }
 											);
 										} else {
 											await bot.api.sendMessage(
@@ -148,25 +148,25 @@ const checkWallUploads = async (msg, bot, ctx) => {
 
 							fs.rename(file.file_path, `/home/paraskcd/United-Walls-Bot/storage/wallpapers/${msg.document?.file_name.split('.')[0].split('_')[0].replace(/([A-Z])/g, ' $1').trim().replace(/\s/g, '')}/${msg.document?.file_name.split('.')[0]}.${msg.document?.mime_type == "image/jpeg" ? "jpg" : "png"}`, async (err) => {
 								if (err) {
-								console.error("Error Found:", err);
-								await bot.api.sendMessage(
-									-1001731686694,
-									`**Error** - \n\n**Wallpaper** - ${newWall.file_name} added to database.\n\n**Category** - ${category.name}.\n\nObject ID - ${newWall._id} (for reference).\n\n**Added by** - ${msg.from.username}.\n\nHowever Wall did not save in storage, because of ${err}`, { message_thread_id: 77299 }
-									);
-								} else {
-									await bot.api.sendMessage(
-										-1001731686694,
-										`**Wallpaper** - ${newWall.file_name} added to database.\n\n**Category** - ${category.name}.\n\nObject ID - ${newWall._id} (for reference).\n\n**Added by** - ${msg.from.username}.\n\nWallpaper saved in storage as well.`, { message_thread_id: 77299 }
-									);
-								}
+										console.error("Error Found: " + err + "\n\n");
+										await bot.api.sendMessage(
+											-1001731686694,
+												`<b>Error</b> - <br><br><b>Wallpaper</b> - ${newWall.file_name} added to database.<br><br><b>Object id</b> - ${newWall._id} (for reference).<br><br><b>Added by</b> - ${msg.from.username}.<br><br>However Wall did not save in storage, because of <br><br><pre>${err}</pre>`, { message_thread_id: 77299, parse_mode: 'HTML' }
+											);
+										} else {
+											await bot.api.sendMessage(
+												-1001731686694,
+												`<b>Existing category</b> - ${category.name}.<br><br><b>Wallpaper</b> - ${newWall.file_name} added to database.<br><br><b>Object id</b> - ${newWall._id} (for reference).<br><br><b>Added by</b> - ${msg.from.username}.<br><br>Wallpaper saved in storage as well<br><br>.`, { message_thread_id: 77299, parse_mode: 'HTML' }
+											);
+										}
 							});
 			
 							fs.rename(thumbnail.file_path, `/home/paraskcd/United-Walls-Bot/storage/wallpapers/${msg.document?.file_name.split('.')[0].split('_')[0].replace(/([A-Z])/g, ' $1').trim().replace(/\s/g, '')}/thumbnails/${msg.document?.file_name.split('.')[0]}.${msg.document?.mime_type == "image/jpeg" ? "jpg" : "png"}`, async (err) => {
 								if (err) {
 								console.error("Error Found:", err);
 								await bot.api.sendMessage(
-									-1001731686694,
-									`**Error** - \n\n**Wallpaper** - ${newWall.file_name} added to database.\n\n**Category** - ${category.name}.\n\nObject ID - ${newWall._id} (for reference).\n\n**Added by** - ${msg.from.username}.\n\nHowever Thumbnail did not save in storage, because of ${err}`, { message_thread_id: 77299 }
+										-1001731686694,
+										`<b>Error</b> - <br><br><b>Existing category</b> - ${category.name}.<br><br><b>Wallpaper</b> - ${newWall.file_name} added to database.<br><br><b>Object id</b> - ${newWall._id} (for reference).<br><br><b>Added by</b> - ${msg.from.username}.<br><br>However Thumbnail did not save in storage, because of <br><br><pre>${err}</pre>.`, { message_thread_id: 77299, parse_mode: 'HTML' }
 									);
 								} else {
 									await bot.api.sendMessage(

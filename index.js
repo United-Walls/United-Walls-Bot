@@ -10,6 +10,8 @@ const swaggerUi = require('swagger-ui-express');
 const axios = require('axios');
 const WallOfDay = require('./models/WallOfDay');
 const compression = require('compression');
+const { TelegramLogin } = require('node-telegram-login')
+const TelegramAuth = new TelegramLogin(process.env.TELEGRAM_BOT_TOKEN);
 
 const swaggerDefinition = {
   openapi: '3.0.0',
@@ -46,6 +48,10 @@ app.use('/api/walls', require('./api/walls'));
 app.use('/api/category', require('./api/category'));
 app.use('/api/collections', require('./api/collections'));
 app.use('/api/uploaders', require('./api/uploaders'));
+
+app.get('/login/telegram', TelegramAuth.defaultMiddleware(), (req, res) => {
+  console.log(res.locals.telegram_user)
+});
 
 // Handles any requests that don't match the ones above
 app.get('*', (req,res) =>{

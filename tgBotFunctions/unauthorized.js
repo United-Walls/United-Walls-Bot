@@ -1,11 +1,7 @@
-const unauthorized = async (ctx, chat_id, messageToDelete) => {
+const unauthorized = async (ctx, chat_id) => {
 	await ctx.reply(
-		`Ok who the fuck? You're not allowed to use this bot Motherfucker! Fuck off!`
+		`Ok who the fuck? Bro are you lost? If you got this message, it means you either fucked up something, don't have the necessary stuff I need, aren't authorized, or you just a plain dumbass. Now Fuck OFF!`
 	);
-
-	setTimeout(() => {
-		ctx.api.deleteMessage(chat_id, messageToDelete);
-	}, 3500);
 };
 
 module.exports = unauthorized;
