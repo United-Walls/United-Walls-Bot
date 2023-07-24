@@ -27,7 +27,7 @@ const register = async (ctx) => {
                     console.warn(err)
                     await ctx.api.sendMessage(
                         -1001731686694,
-                        `<b>Error</b> - <br><br>Avatar did not save in storage, because of <br><br><pre>${err}</pre>.`, { message_thread_id: 77299, parse_mode: 'HTML' }
+                        `<b>Error</b> - \n\nAvatar did not save in storage, because of \n\n${err}.`, { message_thread_id: 77299, parse_mode: 'HTML' }
                     );
                 }
     
@@ -45,12 +45,12 @@ const register = async (ctx) => {
                         console.error("Error Found: " + err + "\n\n");
                         await ctx.api.sendMessage(
                             -1001731686694,
-                            `<b>Error</b> - <br><br>Avatar did not save in storage, because of <br><br><pre>${err}</pre>.`, { message_thread_id: 77299, parse_mode: 'HTML' }
+                            `<b>Error</b> - \n\nAvatar did not save in storage, because of \n\n${err}.`, { message_thread_id: 77299, parse_mode: 'HTML' }
                         );
                     } else {
                         await ctx.api.sendMessage(
                             -1001731686694,
-                            `<b>New Avatar</b> - <br><br>Avatar saved successfully for user ${chatMember.user.username}.`, { message_thread_id: 77299, parse_mode: 'HTML' }
+                            `<b>New Avatar</b> - \n\nAvatar saved successfully for user ${chatMember.user.username}.`, { message_thread_id: 77299, parse_mode: 'HTML' }
                         );
                     }
                 });

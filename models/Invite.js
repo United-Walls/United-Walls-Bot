@@ -23,7 +23,7 @@ const InviteSchema = new mongoose.Schema({
 });
 
 InviteSchema.methods.isExpired = function () {
-  return Date.now() > this.expiry || this.user;
+  return (Date.now() > this.expiry && this.used === false) || this.user;
 };
 
 const Invite = mongoose.model('invite', InviteSchema);

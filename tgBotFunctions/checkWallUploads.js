@@ -99,12 +99,12 @@ const checkWallUploads = async (msg, bot, ctx) => {
 										console.error("Error Found: " + err + "\n\n");
 										await bot.api.sendMessage(
 											-1001731686694,
-												`<b>Error</b> - <br><br><b>New category</b> - ${newCategory.name} created and added to the database.<br><br><b>Wallpaper</b> - ${newWall.file_name} added to database.<br><br><b>Object id</b> - ${newWall._id} (for reference).<br><br><b>Added by</b> - ${msg.from.username}.<br><br>However Wall did not save in storage, because of <br><br><pre>${err}</pre>`, { message_thread_id: 77299, parse_mode: 'HTML' }
+												`<b>Error</b> - \n\n<b>New category</b> - ${newCategory.name} created and added to the database.\n\n<b>Wallpaper</b> - ${newWall.file_name} added to database.\n\n<b>Object id</b> - ${newWall._id} (for reference).\n\n<b>Added by</b> - ${msg.from.username}.\n\nHowever Wall did not save in storage, because of \n\n${err}`, { message_thread_id: 77299, parse_mode: 'HTML' }
 											);
 										} else {
 											await bot.api.sendMessage(
 												-1001731686694,
-												`<b>New category</b> - ${newCategory.name} created and added to the database.<br><br><b>Wallpaper</b> - ${newWall.file_name} added to database.<br><br><b>Object id</b> - ${newWall._id} (for reference).<br><br><b>Added by</b> - ${msg.from.username}.<br><br>Wallpaper saved in storage as well<br><br>.`, { message_thread_id: 77299, parse_mode: 'HTML' }
+												`<b>New category</b> - ${newCategory.name} created and added to the database.\n\n<b>Wallpaper</b> - ${newWall.file_name} added to database.\n\n<b>Object id</b> - ${newWall._id} (for reference).\n\n<b>Added by</b> - ${msg.from.username}.\n\nWallpaper saved in storage as well\n\n.`, { message_thread_id: 77299, parse_mode: 'HTML' }
 											);
 										}
 									});
@@ -114,7 +114,7 @@ const checkWallUploads = async (msg, bot, ctx) => {
 										console.error("Error Found: " + err + "\n\n");
 										await bot.api.sendMessage(
 											-1001731686694,
-												`<b>Error</b> - <br><br><b>New category</b> - ${newCategory.name} created and added to the database.<br><br><b>Wallpaper</b> - ${newWall.file_name} added to database.<br><br><b>Object id</b> - ${newWall._id} (for reference).<br><br><b>Added by</b> - ${msg.from.username}.<br><br>However Thumbnail did not save in storage, because of <br><br><pre>${err}</pre>`, { message_thread_id: 77299, parse_mode: 'HTML' }
+												`<b>Error</b> - \n\n<b>New category</b> - ${newCategory.name} created and added to the database.\n\n<b>Wallpaper</b> - ${newWall.file_name} added to database.\n\n<b>Object id</b> - ${newWall._id} (for reference).\n\n<b>Added by</b> - ${msg.from.username}.\n\nHowever Thumbnail did not save in storage, because of \n\n${err}`, { message_thread_id: 77299, parse_mode: 'HTML' }
 											);
 										} else {
 											await bot.api.sendMessage(
@@ -151,12 +151,12 @@ const checkWallUploads = async (msg, bot, ctx) => {
 										console.error("Error Found: " + err + "\n\n");
 										await bot.api.sendMessage(
 											-1001731686694,
-												`<b>Error</b> - <br><br><b>Wallpaper</b> - ${newWall.file_name} added to database.<br><br><b>Object id</b> - ${newWall._id} (for reference).<br><br><b>Added by</b> - ${msg.from.username}.<br><br>However Wall did not save in storage, because of <br><br><pre>${err}</pre>`, { message_thread_id: 77299, parse_mode: 'HTML' }
+												`<b>Error</b> - \n\n<b>Wallpaper</b> - ${newWall.file_name} added to database.\n\n<b>Object id</b> - ${newWall._id} (for reference).\n\n<b>Added by</b> - ${msg.from.username}.\n\nHowever Wall did not save in storage, because of \n\n${err}`, { message_thread_id: 77299, parse_mode: 'HTML' }
 											);
 										} else {
 											await bot.api.sendMessage(
 												-1001731686694,
-												`<b>Existing category</b> - ${category.name}.<br><br><b>Wallpaper</b> - ${newWall.file_name} added to database.<br><br><b>Object id</b> - ${newWall._id} (for reference).<br><br><b>Added by</b> - ${msg.from.username}.<br><br>Wallpaper saved in storage as well<br><br>.`, { message_thread_id: 77299, parse_mode: 'HTML' }
+												`<b>Existing category</b> - ${category.name}.\n\n<b>Wallpaper</b> - ${newWall.file_name} added to database.\n\n<b>Object id</b> - ${newWall._id} (for reference).\n\n<b>Added by</b> - ${msg.from.username}.\n\nWallpaper saved in storage as well\n\n.`, { message_thread_id: 77299, parse_mode: 'HTML' }
 											);
 										}
 							});
@@ -166,7 +166,7 @@ const checkWallUploads = async (msg, bot, ctx) => {
 								console.error("Error Found:", err);
 								await bot.api.sendMessage(
 										-1001731686694,
-										`<b>Error</b> - <br><br><b>Existing category</b> - ${category.name}.<br><br><b>Wallpaper</b> - ${newWall.file_name} added to database.<br><br><b>Object id</b> - ${newWall._id} (for reference).<br><br><b>Added by</b> - ${msg.from.username}.<br><br>However Thumbnail did not save in storage, because of <br><br><pre>${err}</pre>.`, { message_thread_id: 77299, parse_mode: 'HTML' }
+										`<b>Error</b> - \n\n<b>Existing category</b> - ${category.name}.\n\n<b>Wallpaper</b> - ${newWall.file_name} added to database.\n\n<b>Object id</b> - ${newWall._id} (for reference).\n\n<b>Added by</b> - ${msg.from.username}.\n\nHowever Thumbnail did not save in storage, because of \n\n${err}.`, { message_thread_id: 77299, parse_mode: 'HTML' }
 									);
 								} else {
 									await bot.api.sendMessage(

@@ -33,6 +33,8 @@ const addAvatarMethod = require('./tgBotFunctions/addAvatar');
 const Invite = require('./models/Invite');
 const register = require('./tgBotFunctions/register');
 const generateInvitationsMethod = require('./tgBotFunctions/generateInvitations');
+const ChatIDs = require('./models/ChatIDS');
+const resetPassword = require('./tgBotFunctions/resetPassword');
 
 let chat_id = 0;
 let editName = [];
@@ -50,6 +52,21 @@ let generateInvitations = []
 // Register listeners below
 // Handle /start command
 bot.command('start', async (ctx) => {
+	let chatId = ctx.update.message.chat.id;
+	let uploaderExists = await Uploader.find({ userID: ctx.update.message.from.id });
+	let chatIdExists = await ChatIDs.find({ user: uploaderExists });
+
+	if (uploaderExists.length > 0) {
+		if (chatIdExists.length > 0) {
+			await ChatIDs.findOneAndUpdate({ user: uploaderExists[0] }, { chatId: chatId });
+		} else {
+			await ChatIDs.create({
+				chatID: chatId,
+				user: uploaderExists[0]
+			})
+		}
+	}
+	
 	await ctx.reply(
 		'*Hi\\!* _Welcome_ to [United Walls](t.me/UnitedWalls_Bot)\\.',
 		{ parse_mode: 'MarkdownV2' }
@@ -62,20 +79,35 @@ bot.command('start', async (ctx) => {
 
 bot.command('register', async (ctx) => {
 	chat_id = ctx.update.message.chat.id;
-
+	let chatId = ctx.update.message.chat.id;
 	let uploaderExists = await Uploader.find({ userID: ctx.update.message.from.id });
+	let chatIdExists = await ChatIDs.find({ user: uploaderExists });
 
-	console.log(uploaderExists);
 	if (uploaderExists.length > 0) {
-		const inlineKeyboard = new InlineKeyboard()
-			.text('Yes', 'register-user')
-			.row()
-			.text('No', 'exit-payload');
+		if (chatIdExists.length > 0) {
+			await ChatIDs.findOneAndUpdate({ user: uploaderExists[0] }, { chatId: chatId });
+		} else {
+			await ChatIDs.create({
+				chatID: chatId,
+				user: uploaderExists[0]
+			})
+		}
+	}
 
-		await ctx.reply(
-			`Welcome to the United Walls Registration. @${uploaderExists[0].username}, it seems you are already added in our database. This registration is not necessary, and you can still use our bot to upload wallpapers, edit your profile, edit your wallpapers. This registration is only for our United Walls Creators App, available in both Play Store and App Store. The App will give you a more easier way to handle your wallpapers and your profile in a Graphical User Interface. Alongwith, a well defined dashboard. Do you want to proceed?`,
-			{ reply_markup: inlineKeyboard }
-		);
+	if (uploaderExists.length > 0) {
+		if(uploaderExists[0].password) {
+			await ctx.reply("You are already registered. Why are you wasting my time?")
+		} else {
+			const inlineKeyboard = new InlineKeyboard()
+				.text('Yes', 'register-user')
+				.row()
+				.text('No', 'exit-payload');
+
+			await ctx.reply(
+				`Welcome to the United Walls Registration. @${uploaderExists[0].username}, it seems you are already added in our database. This registration is not necessary, and you can still use our bot to upload wallpapers, edit your profile, edit your wallpapers. This registration is only for our United Walls Creators App, available in both Play Store and App Store. The App will give you a more easier way to handle your wallpapers and your profile in a Graphical User Interface. Alongwith, a well defined dashboard. Do you want to proceed?`,
+				{ reply_markup: inlineKeyboard }
+			);
+		}
 	} else {
 		const inlineKeyboard = new InlineKeyboard()
 			.text('Yes, I have an Invitation Code.', 'invitation-code')
@@ -124,7 +156,20 @@ bot.callbackQuery('invitation-code', async (ctx) => {
 bot.command('menu', async (ctx) => {
 	chat_id = ctx.update.message.chat.id;
 
+	let chatId = ctx.update.message.chat.id;
 	let uploaderExists = await Uploader.find({ userID: ctx.update.message.from.id });
+	let chatIdExists = await ChatIDs.find({ user: uploaderExists });
+
+	if (uploaderExists.length > 0) {
+		if (chatIdExists.length > 0) {
+			await ChatIDs.findOneAndUpdate({ user: uploaderExists[0] }, { chatId: chatId });
+		} else {
+			await ChatIDs.create({
+				chatID: chatId,
+				user: uploaderExists[0]
+			})
+		}
+	}
 
 	if (
 		ctx.update.message.from.id == 975024565 ||
@@ -140,6 +185,8 @@ bot.command('menu', async (ctx) => {
 			.text('Edit your Profile (Username, image privacy, etc.)', `EUpl_${ctx.update.message.from.id}`)
 			.row()
 			.text('Your Wallpapers', `WUpl_${ctx.update.message.from.id}`)
+			.row()
+			.text('Reset password', `RUpl_${ctx.update.message.from.id}`)
 			.row()
 			.text('Add Uploader', 'add-user-payload')
 			.row()
@@ -157,6 +204,8 @@ bot.command('menu', async (ctx) => {
 			.text('Update your Profile (With your Telegram Data', `UUpl_${ctx.update.message.from.id}`)
 			.row()
 			.text('Edit your Profile (Username, image privacy, etc.)', `EUpl_${ctx.update.message.from.id}`)
+			.row()
+			.text('Reset password', `RUpl_${ctx.update.message.from.id}`)
 			.row()
 			.text('Your Wallpapers', `WUpl_${ctx.update.message.from.id}`)
 			.row()
@@ -189,6 +238,8 @@ bot.callbackQuery('generated-invitations', async (ctx) => {
 			await ctx.reply(string);
 
 			return;
+		} else {
+			await ctx.reply("You haven't generated any invite codes, or they have expired, or they have been used.");
 		}
 	 }
 })
@@ -314,6 +365,8 @@ bot.callbackQuery('go-back-from-edit-payload', async (ctx) => {
 			.row()
 			.text('Edit your Profile (Username, image privacy, etc.)', `EUpl_${ctx.update.callback_query.from.id}`)
 			.row()
+			.text('Reset password', `RUpl_${ctx.update.message.from.id}`)
+			.row()
 			.text('Your Wallpapers', `WUpl_${ctx.update.callback_query.from.id}`)
 			.row()
 			.text('Add Uploader', 'add-user-payload')
@@ -328,6 +381,8 @@ bot.callbackQuery('go-back-from-edit-payload', async (ctx) => {
 			.text('Update your Profile (With your Telegram Data', `UUpl_${ctx.update.callback_query.from.id}`)
 			.row()
 			.text('Edit your Profile (Username, image privacy, etc.)', `EUpl_${ctx.update.callback_query.from.id}`)
+			.row()
+			.text('Reset password', `RUpl_${ctx.update.message.from.id}`)
 			.row()
 			.text('Your Wallpapers', `WUpl_${ctx.update.callback_query.from.id}`)
 			.row()
@@ -537,7 +592,6 @@ bot.on('callback_query:data', async (ctx) => {
 		if (
 			uploader.length > 0
 		) {
-			console.log(ctx.update.callback_query.from.id)
 			editUploaderName.push(ctx.update.callback_query.from.id);
 
 			console.log("Edit Uploader Name Array - ", editUploaderName);
@@ -584,6 +638,23 @@ bot.on('callback_query:data', async (ctx) => {
 			ctx.update.callback_query.from.id == 127070302
 		) {
 			await deleteUserMethod(ctx, userId);
+
+			userId = '';
+		} else {
+			await unauthorized(ctx);
+		}
+	}
+
+	if (data.split('_')[0] == 'RUpl') {
+		userId = data.split('_')[1];
+
+		if (
+			ctx.update.callback_query.from.id == 975024565 ||
+			ctx.update.callback_query.from.id == 934949695 ||
+			ctx.update.callback_query.from.id == 1889905927 ||
+			ctx.update.callback_query.from.id == 127070302
+		) {
+			await resetPassword(ctx, userId);
 
 			userId = '';
 		} else {
@@ -697,7 +768,7 @@ bot.on('message', async (ctx) => {
 		const invitationExists = await Invite.find({token: ctx.update.message.text});
 		const currentDate = new Date
 		if (invitationExists.length > 0) {
-			if (invitationExists[0].expiry > currentDate && invitationExists[i].used === false) {
+			if (invitationExists[0].expiry > currentDate && invitationExists[0].used === false) {
 				// Register User
 				invitation = invitation.filter((fil) => { ctx.update.message.from.id != fil });
 
@@ -724,7 +795,7 @@ bot.on('message', async (ctx) => {
 
 				await ctx.api.sendMessage(
 					-1001731686694,
-						`<b>Error</b> - <br><br><b>${ctx.update.message.from.username}</b> tried to use an expired Invitation Code.`, { message_thread_id: 77299, parse_mode: 'HTML' }
+						`<b>Error</b> - \n\n<b>${ctx.update.message.from.username}</b> tried to use an expired Invitation Code.`, { message_thread_id: 77299, parse_mode: 'HTML' }
 					);
 			}
 		} else {
@@ -732,7 +803,7 @@ bot.on('message', async (ctx) => {
 			await ctx.reply("Invitation Code doesn't exist. Who sent you this? Please let us admins know about this in t.me/unitedsetups.")
 			await ctx.api.sendMessage(
 				-1001731686694,
-					`<b>Error</b> - <br><br><b>${ctx.update.message.from.username}</b> might contact you about how the Invitation Code did not exist.`, { message_thread_id: 77299, parse_mode: 'HTML' }
+					`<b>Error</b> - \n\n<b>${ctx.update.message.from.username}</b> might contact you about how the Invitation Code did not exist.`, { message_thread_id: 77299, parse_mode: 'HTML' }
 				);
 			console.log("Invitation Array - ", invitation);
 			return;
@@ -783,8 +854,6 @@ bot.on('message', async (ctx) => {
 	}
 
 	if (editUploaderName.includes(ctx.message.from.id)) {
-		console.log('userId', userId);
-
 		await editUploaderUsernameMethod(ctx, userId);
 
 		editUploaderName = editUploaderName.filter((fil) => { ctx.update.message.from.id != fil });

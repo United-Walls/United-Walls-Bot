@@ -48,10 +48,7 @@ app.use('/api/walls', require('./api/walls'));
 app.use('/api/category', require('./api/category'));
 app.use('/api/collections', require('./api/collections'));
 app.use('/api/uploaders', require('./api/uploaders'));
-
-app.get('/login/telegram', TelegramAuth.defaultMiddleware(), (req, res) => {
-  console.log(res.locals.telegram_user)
-});
+app.use('/api/creators/auth', require('./api/creators/auth'));
 
 // Handles any requests that don't match the ones above
 app.get('*', (req,res) =>{
