@@ -1,4 +1,5 @@
 const { Bot, InlineKeyboard, GrammyError, HttpError } = require('grammy');
+const fs = require('fs');
 require('dotenv').config();
 // Create new instance of Bot class, pass your token in the Bot constructor.
 const bot = new Bot(process.env.TELEGRAM_BOT_TOKEN, {
@@ -6,6 +7,7 @@ const bot = new Bot(process.env.TELEGRAM_BOT_TOKEN, {
 		apiRoot: "http://10.0.0.72:8081"
 	}
 });
+const start = require('./bot/start')
 const menuMethod = require('./tgBotFunctions/menu');
 const unauthorized = require('./tgBotFunctions/unauthorized');
 const deleteMessage = require('./tgBotFunctions/delete');
@@ -35,6 +37,9 @@ const register = require('./tgBotFunctions/register');
 const generateInvitationsMethod = require('./tgBotFunctions/generateInvitations');
 const ChatIDs = require('./models/ChatIDS');
 const resetPassword = require('./tgBotFunctions/resetPassword');
+const Walls = require('./models/Walls');
+const Category = require('./models/Category');
+const TempWalls = require('./models/TempWalls');
 
 let chat_id = 0;
 let editName = [];
@@ -48,65 +53,53 @@ let addAvatar = [];
 let registers = [];
 let invitation = [];
 let generateInvitations = []
+let message_to_delete = {chatId: null, message: []};
 
 // Register listeners below
 // Handle /start command
-bot.command('start', async (ctx) => {
-	let chatId = ctx.update.message.chat.id;
-	let uploaderExists = await Uploader.find({ userID: ctx.update.message.from.id });
-	let chatIdExists = await ChatIDs.find({ user: uploaderExists });
-
-	if (uploaderExists.length > 0) {
-		if (chatIdExists.length > 0) {
-			await ChatIDs.findOneAndUpdate({ user: uploaderExists[0] }, { chatId: chatId });
-		} else {
-			await ChatIDs.create({
-				chatID: chatId,
-				user: uploaderExists[0]
-			})
-		}
-	}
-	
-	await ctx.reply(
-		'*Hi\\!* _Welcome_ to [United Walls](t.me/UnitedWalls_Bot)\\.',
-		{ parse_mode: 'MarkdownV2' }
-	);
-	await ctx.reply(
-		"As you see\\, I'm just a bot\\. Join our Group to access our Awesome Walls\\! \\:\\)\n\nOur Group is [United Setups](t.me/unitedsetups)\\.",
-		{ parse_mode: 'MarkdownV2' }
-	);
-});
+bot.command('start', start);
 
 bot.command('register', async (ctx) => {
 	chat_id = ctx.update.message.chat.id;
 	let chatId = ctx.update.message.chat.id;
 	let uploaderExists = await Uploader.find({ userID: ctx.update.message.from.id });
 	let chatIdExists = await ChatIDs.find({ user: uploaderExists });
-
-	if (uploaderExists.length > 0) {
-		if (chatIdExists.length > 0) {
-			await ChatIDs.findOneAndUpdate({ user: uploaderExists[0] }, { chatId: chatId });
-		} else {
-			await ChatIDs.create({
-				chatID: chatId,
-				user: uploaderExists[0]
-			})
+	
+	if (ctx.update.message.chat.id == ctx.update.message.from.id) {
+		if (uploaderExists.length > 0) {
+			if (chatIdExists.length > 0) {
+				await ChatIDs.findOneAndUpdate({ user: uploaderExists[0] }, { chatId: chatId });
+			} else {
+				await ChatIDs.create({
+					chatID: chatId,
+					user: uploaderExists[0]
+				})
+			}
 		}
 	}
 
 	if (uploaderExists.length > 0) {
 		if(uploaderExists[0].password) {
-			await ctx.reply("You are already registered. Why are you wasting my time?")
+			const message = await ctx.reply("You are already registered. Why are you wasting my time?")
+
+			message_to_delete = { chatId: ctx.update.message.chat, message: [message.message_id] };
+
+			setTimeout(async () => {
+				await deleteMessage(ctx, message_to_delete.chatId, message_to_delete.message);
+				message_to_delete = { chatId: null, message: [] };
+			}, 3000);
 		} else {
 			const inlineKeyboard = new InlineKeyboard()
 				.text('Yes', 'register-user')
 				.row()
 				.text('No', 'exit-payload');
 
-			await ctx.reply(
+			const message = await ctx.reply(
 				`Welcome to the United Walls Registration. @${uploaderExists[0].username}, it seems you are already added in our database. This registration is not necessary, and you can still use our bot to upload wallpapers, edit your profile, edit your wallpapers. This registration is only for our United Walls Creators App, available in both Play Store and App Store. The App will give you a more easier way to handle your wallpapers and your profile in a Graphical User Interface. Alongwith, a well defined dashboard. Do you want to proceed?`,
-				{ reply_markup: inlineKeyboard }
+				{ reply_markup: inlineKeyboard, message_thread_id: ctx.update.message.message_thread_id }
 			);
+
+			message_to_delete = { chatId: ctx.update.message.chat.id, message: [message.message_id] };
 		}
 	} else {
 		const inlineKeyboard = new InlineKeyboard()
@@ -114,16 +107,18 @@ bot.command('register', async (ctx) => {
 			.row()
 			.text('No, I do not have an Invitation Code.', 'exit-payload');
 
-		await ctx.reply(
+		const message = await ctx.reply(
 			`Welcome to the United Walls Registration. It seems, you aren't added in our Database. In order to be able to register, you require an invitation code. You need to ask the admins of t.me/unitedsetups. So do you have an Invitation Code?`,
-			{ reply_markup: inlineKeyboard }
+			{ reply_markup: inlineKeyboard, message_thread_id: ctx.update.message.message_thread_id }
 		);
+
+		message_to_delete = { chatId: ctx.update.message.chat.id, message: [message.message_id] };
 	}
 });
 
 bot.callbackQuery('register-user', async (ctx) => {
+	await deleteMessage(ctx, message_to_delete.chatId, message_to_delete.message);
 	registers.push(ctx.update.callback_query.from.id);
-
 	console.log("Register Array - ", registers);
 
 	let editKeyboard = {
@@ -132,14 +127,16 @@ bot.callbackQuery('register-user', async (ctx) => {
 		],
 	};
 
-	await ctx.reply('Please enter a password. Should be more than 5 digits, should have alpha-numeric characters, etc. You know the drill.', {
+	const message = await ctx.reply('Please enter a password. Should be more than 5 digits, should have alpha-numeric characters, etc. You know the drill.', {
 		reply_markup: editKeyboard,
 	});
+
+	message_to_delete = { chatId: ctx.update.callback_query.message.chat.id, message: [message.message_id, message.message_id + 1] };
 });
 
 bot.callbackQuery('invitation-code', async (ctx) => {
+	await deleteMessage(ctx, message_to_delete.chatId, message_to_delete.message);
 	invitation.push(ctx.update.callback_query.from.id);
-
 	console.log("Invitation Array - ", invitation);
 
 	let editKeyboard = {
@@ -148,26 +145,28 @@ bot.callbackQuery('invitation-code', async (ctx) => {
 		],
 	};
 
-	await ctx.reply('Please enter the Invitation Code.', {
+	const message = await ctx.reply('Please enter the Invitation Code.', {
 		reply_markup: editKeyboard,
 	});
+
+	message_to_delete = { chatId: ctx.update.callback_query.message.chat.id, message: [message.message_id, message.message_id + 1] };
 });
 
 bot.command('menu', async (ctx) => {
-	chat_id = ctx.update.message.chat.id;
-
 	let chatId = ctx.update.message.chat.id;
 	let uploaderExists = await Uploader.find({ userID: ctx.update.message.from.id });
 	let chatIdExists = await ChatIDs.find({ user: uploaderExists });
 
-	if (uploaderExists.length > 0) {
-		if (chatIdExists.length > 0) {
-			await ChatIDs.findOneAndUpdate({ user: uploaderExists[0] }, { chatId: chatId });
-		} else {
-			await ChatIDs.create({
-				chatID: chatId,
-				user: uploaderExists[0]
-			})
+	if (ctx.update.message.chat.id == ctx.update.message.from.id) {
+		if (uploaderExists.length > 0) {
+			if (chatIdExists.length > 0) {
+				await ChatIDs.findOneAndUpdate({ user: uploaderExists[0] }, { chatId: chatId });
+			} else {
+				await ChatIDs.create({
+					chatID: chatId,
+					user: uploaderExists[0]
+				})
+			}
 		}
 	}
 
@@ -198,7 +197,9 @@ bot.command('menu', async (ctx) => {
 			.row()
 			.text('Exit', 'exit-payload');
 
-		await menuMethod(ctx, true, inlineKeyboard);
+		const message = await menuMethod(ctx, true, inlineKeyboard);
+
+		message_to_delete = { chatId: chatId, message: [message.message_id] };
 	} else if (uploaderExists.length > 0) {
 		const inlineUploaderKeyboard = new InlineKeyboard()
 			.text('Update your Profile (With your Telegram Data', `UUpl_${ctx.update.message.from.id}`)
@@ -211,13 +212,19 @@ bot.command('menu', async (ctx) => {
 			.row()
 			.text('Exit', 'exit-payload');
 
-		await uploaderMenuMethod(ctx, true, inlineUploaderKeyboard);
+		const message = await uploaderMenuMethod(ctx, true, inlineUploaderKeyboard);
+
+		message_to_delete = { chatId: ctx.update.message.chat.id, message: [message.message_id] };
 	} else {
-		await unauthorized(ctx);
+		const message = await unauthorized(ctx);
+
+		message_to_delete = { chatId: ctx.update.message.chat.id, message: [message.message_id] };
 	}
 });
 
 bot.callbackQuery('generated-invitations', async (ctx) => {
+	await deleteMessage(ctx, message_to_delete.chatId, message_to_delete.message);
+	message_to_delete = { chatId: ctx.update.callback_query.message.chat.id, message: [ctx.update.callback_query.message.message_id + 1, ctx.update.callback_query.message.message_id + 2] };
 	const uploader = await Uploader.findOne({userID: ctx.update.callback_query.from.id});
 	const invites = await Invite.find({ uploader: uploader });
 	let string = "";
@@ -237,14 +244,23 @@ bot.callbackQuery('generated-invitations', async (ctx) => {
 
 			await ctx.reply(string);
 
+			message_to_delete = { chatId: null, message: [] };
 			return;
 		} else {
 			await ctx.reply("You haven't generated any invite codes, or they have expired, or they have been used.");
+
+			setTimeout(async () => {
+				await deleteMessage(ctx, message_to_delete.chatId, message_to_delete.message)
+				message_to_delete = { chatId: null, message: [] };
+			}, 3000);
 		}
 	 }
 })
 
 bot.callbackQuery('generate-invitations', async (ctx) => {
+	await deleteMessage(ctx, message_to_delete.chatId, message_to_delete.message);
+	message_to_delete = { chatId: ctx.update.callback_query.message.chat.id, message: [ctx.update.callback_query.message.message_id + 1, ctx.update.callback_query.message.message_id + 2] };
+
 	if (
 		ctx.update.callback_query.from.id == 975024565 ||
 		ctx.update.callback_query.from.id == 934949695 ||
@@ -266,10 +282,17 @@ bot.callbackQuery('generate-invitations', async (ctx) => {
 		});
 	} else {
 		await unauthorized(ctx);
+
+		setTimeout(async () => {
+			await deleteMessage(ctx, message_to_delete.chatId, message_to_delete.message)
+			message_to_delete = { chatId: null, message: [] };
+		}, 3000);
 	}
 })
 
 bot.callbackQuery('exit-payload', async (ctx) => {
+	await deleteMessage(ctx, message_to_delete.chatId, message_to_delete.message);
+
 	registers = registers.filter((fil) => { ctx.update.callback_query.from.id != fil });
 	invitation = invitation.filter((fil) => { ctx.update.callback_query.from.id != fil });
 	addAvatar = addAvatar.filter((fil) => { ctx.update.callback_query.from.id != fil });
@@ -279,15 +302,25 @@ bot.callbackQuery('exit-payload', async (ctx) => {
 	editUploaderName = editUploaderName.filter((fil) => { ctx.update.callback_query.from.id != fil });
 	generateInvitations = generateInvitations.filter((fil) => { ctx.update.callback_query.from.id != fil });
 
-	await ctx.reply(
-		`Ok! Bye, LOL!`
+	const message = await ctx.reply(
+		`Ok! Bye, LOL!`, { message_thread_id: ctx.update.callback_query.message.message_thread_id }
 	);
+
+	message_to_delete = { chatId: ctx.update.callback_query.message.chat.id, message: [message.message_id] };
+
+	setTimeout(async () => {
+		await deleteMessage(ctx, message_to_delete.chatId, message_to_delete.message)
+		message_to_delete = { chatId: null, message: [] };
+	}, 3000);
 
 	return;
 });
 
 bot.callbackQuery('add-user-payload', async (ctx) => {
 	chat_id = ctx.update.callback_query.message.chat.id;
+
+	await deleteMessage(ctx, message_to_delete.chatId, message_to_delete.message);
+	message_to_delete = { chatId: ctx.update.callback_query.message.chat.id, message: [ctx.update.callback_query.message.message_id + 1, ctx.update.callback_query.message.message_id + 2] };
 
 	if (
 		ctx.update.callback_query.from.id == 975024565 ||
@@ -313,11 +346,17 @@ bot.callbackQuery('add-user-payload', async (ctx) => {
 		);
 	} else {
 		await unauthorized(ctx);
+
+		setTimeout(async () => {
+			await deleteMessage(ctx, message_to_delete.chatId, message_to_delete.message)
+			message_to_delete = { chatId: null, message: [] };
+		}, 3000);
 	}
 });
 
 bot.callbackQuery('edit-user-payload', async (ctx) => {
-	chat_id = ctx.update.callback_query.message.chat.id;
+	await deleteMessage(ctx, message_to_delete.chatId, message_to_delete.message);
+	message_to_delete = { chatId: ctx.update.callback_query.message.chat.id, message: [ctx.update.callback_query.message.message_id + 1, ctx.update.callback_query.message.message_id + 2] };
 
 	if (
 		ctx.update.callback_query.from.id == 975024565 ||
@@ -328,12 +367,16 @@ bot.callbackQuery('edit-user-payload', async (ctx) => {
 		await usersMenuMethod(ctx);
 	} else {
 		await unauthorized(ctx);
+		setTimeout(async () => {
+			await deleteMessage(ctx, message_to_delete.chatId, message_to_delete.message)
+			message_to_delete = { chatId: null, message: [] };
+		}, 3000);
 	}
 });
 
 // Wait for click events with specific callback data.
 bot.callbackQuery('edit-payload', async (ctx) => {
-	chat_id = ctx.update.callback_query.message.chat.id;
+	await deleteMessage(ctx, message_to_delete.chatId, message_to_delete.message);
 
 	if (
 		ctx.update.callback_query.from.id == 975024565 ||
@@ -341,14 +384,23 @@ bot.callbackQuery('edit-payload', async (ctx) => {
 		ctx.update.callback_query.from.id == 1889905927 ||
 		ctx.update.callback_query.from.id == 127070302
 	) {
-		await categoriesMenu(ctx);
+		const message = await categoriesMenu(ctx);
+		message_to_delete = { chatId: ctx.update.callback_query.message.chat.id, message: [message.message_id] };
 	} else {
-		await unauthorized(ctx);
+		const message = await unauthorized(ctx);
+		message_to_delete = { chatId: ctx.update.callback_query.message.chat.id, message: [message.message_id] };
+		setTimeout(async () => {
+			await deleteMessage(ctx, message_to_delete.chatId, message_to_delete.message)
+			message_to_delete = { chatId: null, message: [] };
+		}, 3000);
 	}
 });
 
 bot.callbackQuery('go-back-from-edit-payload', async (ctx) => {
 	chat_id = ctx.update.callback_query.message.chat.id;
+
+	await deleteMessage(ctx, message_to_delete.chatId, message_to_delete.message);
+	message_to_delete = { chatId: ctx.update.callback_query.message.chat.id, message: [ctx.update.callback_query.message.message_id + 1, ctx.update.callback_query.message.message_id + 2] };
 
 	let uploaderExists = await Uploader.find({ userID: ctx.update.callback_query.from.id });
 
@@ -365,7 +417,7 @@ bot.callbackQuery('go-back-from-edit-payload', async (ctx) => {
 			.row()
 			.text('Edit your Profile (Username, image privacy, etc.)', `EUpl_${ctx.update.callback_query.from.id}`)
 			.row()
-			.text('Reset password', `RUpl_${ctx.update.message.from.id}`)
+			.text('Reset password', `RUpl_${ctx.update.callback_query.from.id}`)
 			.row()
 			.text('Your Wallpapers', `WUpl_${ctx.update.callback_query.from.id}`)
 			.row()
@@ -382,7 +434,7 @@ bot.callbackQuery('go-back-from-edit-payload', async (ctx) => {
 			.row()
 			.text('Edit your Profile (Username, image privacy, etc.)', `EUpl_${ctx.update.callback_query.from.id}`)
 			.row()
-			.text('Reset password', `RUpl_${ctx.update.message.from.id}`)
+			.text('Reset password', `RUpl_${ctx.update.callback_query.from.id}`)
 			.row()
 			.text('Your Wallpapers', `WUpl_${ctx.update.callback_query.from.id}`)
 			.row()
@@ -391,11 +443,116 @@ bot.callbackQuery('go-back-from-edit-payload', async (ctx) => {
 		await uploaderMenuMethod(ctx, false, inlineKeyboard);
 	} else {
 		await unauthorized(ctx);
+		setTimeout(async () => {
+			await deleteMessage(ctx, message_to_delete.chatId, message_to_delete.message)
+			message_to_delete = { chatId: null, message: [] };
+		}, 3000);
 	}
 });
 
 bot.on('callback_query:data', async (ctx) => {
+	await deleteMessage(ctx, message_to_delete.chatId, message_to_delete.message);
+	message_to_delete = { chatId: ctx.update.callback_query.message.chat.id, message: [ctx.update.callback_query.message.message_id + 1, ctx.update.callback_query.message.message_id + 2] };
 	const data = ctx.update.callback_query.data;
+
+	if (data.split('_')[0] == 'A') {
+		//message_thread_id: 185847
+		//chat_id: -1001437820361
+		chat_id = ctx.update.callback_query.message.chat.id;
+
+		if (
+			ctx.update.callback_query.from.id == 975024565 ||
+			ctx.update.callback_query.from.id == 934949695 ||
+			ctx.update.callback_query.from.id == 1889905927 ||
+			ctx.update.callback_query.from.id == 127070302
+		) {
+			const wallId = data.split('_')[1];
+			const wall = await Walls.findById(wallId);
+			const category = await Category.findById(wall.category);
+			const newWall = await Walls.findByIdAndUpdate(wallId, {
+				hidden: false,
+				thumbnail_url: `http://unitedwalls.paraskcd.com/image/${category.name}/thumbnails/${wall.file_name}.${wall.file_ext}`,
+				file_url: `http://unitedwalls.paraskcd.com/image/${category.name}/${wall.file_name}.${wall.file_ext}`
+			});
+
+			await Category.findByIdAndUpdate(category.id, {
+				$push: { walls: newWall },
+			  });
+		  
+			await Uploader.findByIdAndUpdate(wall.creator, {
+				$push: { walls: newWall },
+			});
+
+			const tempWall = await TempWalls.findOneAndDelete({ wall: wall });
+
+			await ctx.api.editMessageCaption(-1001731686694, tempWall.messageID, { reply_markup: {}, caption: `Approved by ${ctx.update.callback_query.from.username }` });
+
+			let file = await ctx.api.getFile(wall.file_id);
+			let thumbnail = await ctx.api.getFile(wall.thumbnail_id);
+
+			await ctx.api.sendDocument(-1001437820361, wall.file_id, { message_thread_id: "185847", caption: `${wall.file_name} uploaded by ${wall.addedBy}` });
+
+			fs.rename(file.file_path, `/home/paraskcd/United-Walls-Bot/storage/wallpapers/${category.name}/${wall.file_name}.${wall.file_ext}`, async (err) => {
+				if (err) {
+						console.error("Error Found: " + err + "\n\n");
+						await bot.api.sendMessage(
+							-1001731686694,
+								`<b>Error</b> - \n\n<b>Wallpaper</b> - ${newWall.file_name} added to database.\n\n<b>Object id</b> - ${newWall._id} (for reference).\n\n<b>Approved by</b> - ${ctx.update.callback_query.from.username}. Added by${wall.addedBy}.\n\nHowever Wall did not save in storage, because of \n\n${err}`, { message_thread_id: 77299, parse_mode: 'HTML' }
+							);
+						} else {
+							await bot.api.sendMessage(
+								-1001731686694,
+								`<b>Existing category</b> - ${category.name}.\n\n<b>Wallpaper</b> - ${newWall.file_name} added to database.\n\n<b>Object id</b> - ${newWall._id} (for reference).\n\n<b>Approved by</b> - ${ctx.update.callback_query.from.username}. Added by${wall.addedBy}.\n\nWallpaper saved in storage as well\n\n.`, { message_thread_id: 77299, parse_mode: 'HTML' }
+							);
+						}
+			});
+
+			fs.rename(thumbnail.file_path, `/home/paraskcd/United-Walls-Bot/storage/wallpapers/${category.name}/thumbnails/${wall.file_name}.${wall.file_ext}`, async (err) => {
+				if (err) {
+				console.error("Error Found:", err);
+				await bot.api.sendMessage(
+						-1001731686694,
+						`<b>Error</b> - \n\n<b>Existing category</b> - ${category.name}.\n\n<b>Wallpaper</b> - ${newWall.file_name} added to database.\n\n<b>Object id</b> - ${newWall._id} (for reference).\n\n<b>Approved by</b> - ${ctx.update.callback_query.from.username}. Added by${wall.addedBy}.\n\nHowever Thumbnail did not save in storage, because of \n\n${err}.`, { message_thread_id: 77299, parse_mode: 'HTML' }
+					);
+				} else {
+					await bot.api.sendMessage(
+						-1001731686694,
+						`Thumbnail also saved in storage as well.`, { message_thread_id: 77299 }
+					);
+				}
+			});
+
+			return;
+		} else {
+			await unauthorized(ctx);
+			setTimeout(async () => {
+				await deleteMessage(ctx, message_to_delete.chatId, message_to_delete.message)
+				message_to_delete = { chatId: null, message: [] };
+			}, 3000);
+		}
+	}
+
+	if (data.split('_')[0] == 'D') {
+		chat_id = ctx.update.callback_query.message.chat.id;
+
+		if (
+			ctx.update.callback_query.from.id == 975024565 ||
+			ctx.update.callback_query.from.id == 934949695 ||
+			ctx.update.callback_query.from.id == 1889905927 ||
+			ctx.update.callback_query.from.id == 127070302
+		) {
+			const wallId = data.split('_')[1];
+			const wall = await Walls.findByIdAndDelete(wallId);
+			const tempWall = await TempWalls.findOneAndDelete({ wall: wall });
+			await ctx.api.editMessageCaption(-1001731686694, tempWall.messageID, { reply_markup: {}, caption: `Denied by ${ ctx.update.callback_query.from.username }` });
+		} else {
+			await unauthorized(ctx);
+			setTimeout(async () => {
+				await deleteMessage(ctx, message_to_delete.chatId, message_to_delete.message)
+				message_to_delete = { chatId: null, message: [] };
+			}, 3000);
+		}
+	}
 
 	if (data.split('_')[0] == 'Cat') {
 		chat_id = ctx.update.callback_query.message.chat.id;
@@ -409,6 +566,10 @@ bot.on('callback_query:data', async (ctx) => {
 			await categoryWallsMenu(ctx, data);
 		} else {
 			await unauthorized(ctx);
+			setTimeout(async () => {
+				await deleteMessage(ctx, message_to_delete.chatId, message_to_delete.message)
+				message_to_delete = { chatId: null, message: [] };
+			}, 3000);
 		}
 	}
 
@@ -423,6 +584,10 @@ bot.on('callback_query:data', async (ctx) => {
 			await wallMenu(ctx, data, chat_id);
 		} else {
 			await unauthorized(ctx);
+			setTimeout(async () => {
+				await deleteMessage(ctx, message_to_delete.chatId, message_to_delete.message)
+				message_to_delete = { chatId: null, message: [] };
+			}, 3000);
 		}
 	}
 
@@ -450,6 +615,10 @@ bot.on('callback_query:data', async (ctx) => {
 			});
 		} else {
 			await unauthorized(ctx);
+			setTimeout(async () => {
+				await deleteMessage(ctx, message_to_delete.chatId, message_to_delete.message)
+				message_to_delete = { chatId: null, message: [] };
+			}, 3000);
 		}
 	}
 
@@ -481,6 +650,10 @@ bot.on('callback_query:data', async (ctx) => {
 			);
 		} else {
 			await unauthorized(ctx);
+			setTimeout(async () => {
+				await deleteMessage(ctx, message_to_delete.chatId, message_to_delete.message)
+				message_to_delete = { chatId: null, message: [] };
+			}, 3000);
 		}
 	}
 
@@ -498,6 +671,10 @@ bot.on('callback_query:data', async (ctx) => {
 			await ctx.reply('Wallpaper - ' + fileName + ' Deleted.');
 		} else {
 			await unauthorized(ctx);
+			setTimeout(async () => {
+				await deleteMessage(ctx, message_to_delete.chatId, message_to_delete.message)
+				message_to_delete = { chatId: null, message: [] };
+			}, 3000);
 		}
 	}
 
@@ -515,6 +692,10 @@ bot.on('callback_query:data', async (ctx) => {
 			await editCategoryMenu(ctx);
 		} else {
 			await unauthorized(ctx);
+			setTimeout(async () => {
+				await deleteMessage(ctx, message_to_delete.chatId, message_to_delete.message)
+				message_to_delete = { chatId: null, message: [] };
+			}, 3000);
 		}
 	}
 
@@ -531,6 +712,10 @@ bot.on('callback_query:data', async (ctx) => {
 			wallId = '';
 		} else {
 			await unauthorized(ctx);
+			setTimeout(async () => {
+				await deleteMessage(ctx, message_to_delete.chatId, message_to_delete.message)
+				message_to_delete = { chatId: null, message: [] };
+			}, 3000);
 		}
 	}
 
@@ -548,6 +733,10 @@ bot.on('callback_query:data', async (ctx) => {
 			await userMenuMethod(ctx, userId);
 		} else {
 			await unauthorized(ctx);
+			setTimeout(async () => {
+				await deleteMessage(ctx, message_to_delete.chatId, message_to_delete.message)
+				message_to_delete = { chatId: null, message: [] };
+			}, 3000);
 		}
 	}
 
@@ -565,6 +754,10 @@ bot.on('callback_query:data', async (ctx) => {
 			userId = '';
 		} else {
 			await unauthorized(ctx);
+			setTimeout(async () => {
+				await deleteMessage(ctx, message_to_delete.chatId, message_to_delete.message)
+				message_to_delete = { chatId: null, message: [] };
+			}, 3000);
 		}
 	}
 
@@ -581,6 +774,10 @@ bot.on('callback_query:data', async (ctx) => {
 			userId = '';
 		} else {
 			await unauthorized(ctx);
+			setTimeout(async () => {
+				await deleteMessage(ctx, message_to_delete.chatId, message_to_delete.message)
+				message_to_delete = { chatId: null, message: [] };
+			}, 3000);
 		}
 	}
 
@@ -608,6 +805,10 @@ bot.on('callback_query:data', async (ctx) => {
 			});
 		} else {
 			await unauthorized(ctx);
+			setTimeout(async () => {
+				await deleteMessage(ctx, message_to_delete.chatId, message_to_delete.message)
+				message_to_delete = { chatId: null, message: [] };
+			}, 3000);
 		}
 	}
 
@@ -624,6 +825,10 @@ bot.on('callback_query:data', async (ctx) => {
 			userId = '';
 		} else {
 			await unauthorized(ctx);
+			setTimeout(async () => {
+				await deleteMessage(ctx, message_to_delete.chatId, message_to_delete.message)
+				message_to_delete = { chatId: null, message: [] };
+			}, 3000);
 		}
 	}
 
@@ -642,6 +847,10 @@ bot.on('callback_query:data', async (ctx) => {
 			userId = '';
 		} else {
 			await unauthorized(ctx);
+			setTimeout(async () => {
+				await deleteMessage(ctx, message_to_delete.chatId, message_to_delete.message)
+				message_to_delete = { chatId: null, message: [] };
+			}, 3000);
 		}
 	}
 
@@ -659,6 +868,10 @@ bot.on('callback_query:data', async (ctx) => {
 			userId = '';
 		} else {
 			await unauthorized(ctx);
+			setTimeout(async () => {
+				await deleteMessage(ctx, message_to_delete.chatId, message_to_delete.message)
+				message_to_delete = { chatId: null, message: [] };
+			}, 3000);
 		}
 	}
 
@@ -676,6 +889,10 @@ bot.on('callback_query:data', async (ctx) => {
 			userId = '';
 		} else {
 			await unauthorized(ctx);
+			setTimeout(async () => {
+				await deleteMessage(ctx, message_to_delete.chatId, message_to_delete.message)
+				message_to_delete = { chatId: null, message: [] };
+			}, 3000);
 		}
 	}
 
@@ -693,6 +910,10 @@ bot.on('callback_query:data', async (ctx) => {
 			await uploaderWallsMenu(ctx, userId, page);
 		} else {
 			await unauthorized(ctx);
+			setTimeout(async () => {
+				await deleteMessage(ctx, message_to_delete.chatId, message_to_delete.message)
+				message_to_delete = { chatId: null, message: [] };
+			}, 3000);
 		}
 	}
 
@@ -719,6 +940,10 @@ bot.on('callback_query:data', async (ctx) => {
 			});
 		} else {
 			await unauthorized(ctx);
+			setTimeout(async () => {
+				await deleteMessage(ctx, message_to_delete.chatId, message_to_delete.message)
+				message_to_delete = { chatId: null, message: [] };
+			}, 3000);
 		}
 	}
 });

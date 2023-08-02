@@ -1,25 +1,15 @@
 const deleteMessage = async (
 	ctx,
-	chat_id,
+	chatId,
 	messageToDelete,
-	messageToDelete2
 ) => {
-	if (chat_id != null && chat_id != undefined && chat_id != 0) {
-		if (
-			messageToDelete != null &&
-			messageToDelete != undefined &&
-			messageToDelete != 0
-		) {
-			await ctx.api.deleteMessage(chat_id, messageToDelete);
+	try {
+		for(let i = 0; i < messageToDelete.length; i++) {
+			let msgId = await ctx.api.copyMessage(chatId, chatId, messageToDelete[i]);
+			await ctx.api.deleteMessage(chatId, messageToDelete[i]);
 		}
-
-		if (
-			messageToDelete2 != null &&
-			messageToDelete2 != undefined &&
-			messageToDelete2 != 0
-		) {
-			await ctx.api.deleteMessage(chat_id, messageToDelete2);
-		}
+	} catch (err) {
+		console.error(err);
 	}
 };
 

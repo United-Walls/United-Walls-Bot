@@ -36,6 +36,16 @@ const wallsSchema = new mongoose.Schema({
     },
     addedBy: {
         type: String
+    },
+    hidden: {
+        type: Boolean
+    },
+    file_ext: {
+        type: String
+    },
+    creator: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "uploader"
     }
 }, { timestamps: true });
 

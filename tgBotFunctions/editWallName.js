@@ -5,7 +5,7 @@ const editWallName = async (ctx, wallId) => {
 
 	if (newFileName != undefined) {
 		await Walls.findByIdAndUpdate(wallId, { file_name: newFileName });
-		await ctx.reply('Wall updated with name - ' + newFileName);
+		await ctx.reply('Wall updated with name - ' + newFileName, {message_thread_id: ctx.update.callback_query.message.message_thread_id});
 	}
 };
 

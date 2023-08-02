@@ -42,8 +42,8 @@ const categoriesMenu = async (ctx) => {
 		{ text: 'Exit', callback_data: 'exit-payload' },
 	]);
 
-	await ctx.reply(`Choose a Category to edit a Wallpaper from -`, {
-		reply_markup: editKeyboard,
+	return await ctx.reply(`Choose a Category to edit a Wallpaper from -`, {
+		reply_markup: editKeyboard, message_thread_id: ctx.update.callback_query.message.message_thread_id
 	});
 };
 

@@ -27,7 +27,7 @@ const editUserMenuMethod = async (ctx, userId) => {
     }
 
     await ctx.reply(`Edit User - ${ uploader.username } -`, {
-		reply_markup: editKeyboard,
+		reply_markup: editKeyboard, message_thread_id: ctx.update.callback_query.message.message_thread_id
 	});
 }
 

@@ -56,7 +56,7 @@ const categoryWallsMenu = async (ctx, data) => {
 	]);
 
 	await ctx.reply(`Choose a Wallpaper to edit -`, {
-		reply_markup: editKeyboard,
+		reply_markup: editKeyboard, message_thread_id: ctx.update.callback_query.message.message_thread_id
 	});
 };
 

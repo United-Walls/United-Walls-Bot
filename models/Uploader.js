@@ -23,6 +23,55 @@ const UploaderSchema = new mongoose.Schema({
     password: {
         type: String
     },
+    description: {
+        type: String
+    },
+    socialMediaLinks: {
+        twitter: {
+            type: String
+        },
+        instagram: {
+            type: String
+        },
+        mastodon: {
+            type: String
+        },
+        facebook: {
+            type: String
+        },
+        threads: {
+            type: String
+        },
+        steam: {
+            type: String
+        },
+        linkedIn: {
+            type: String
+        },
+        link: {
+            type: String
+        },
+        other: [
+            {
+                title: { type: String },
+                link: { type: String }
+            }
+        ]
+    },
+    donationLinks: {
+        paypal: {
+            type: String
+        },
+        patreon: {
+            type: String
+        },
+        otherdonations: [
+            {
+                title: { type: String },
+                link: { type: String }
+            }
+        ]
+    },
     walls: [
         {
             type: mongoose.Schema.Types.ObjectId,

@@ -8,7 +8,7 @@ const editUploaderUsernameMethod = async (ctx, userId) => {
             username: username
         });
 
-        await ctx.reply(`Updated to - ${username} -`);
+        await ctx.reply(`Updated to - ${username} -`, {message_thread_id: ctx.update.callback_query.message.message_thread_id});
     }
 }
 

@@ -26,7 +26,7 @@ const changeCategory = async (ctx, wallId, categoryId) => {
 		'Wallpaper Category changed from - ' +
 			previousCategory.name +
 			' to - ' +
-			latestCategory.name
+			latestCategory.name, { message_thread_id: ctx.update.callback_query.message.message_thread_id }
 	);
 };
 

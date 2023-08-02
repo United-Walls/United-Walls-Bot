@@ -21,12 +21,12 @@ const generateInvitationsMethod = async (ctx) => {
                 uploader: uploader
             });
 
-            await ctx.reply(`The generated Invite Code is - ${newInvite.token} \n\nit's expiry is - ${newInvite.expiry.toLocaleString()}`);
+            await ctx.reply(`The generated Invite Code is - ${newInvite.token} \n\nit's expiry is - ${newInvite.expiry.toLocaleString()}`, {message_thread_id: ctx.update.callback_query.message.message_thread_id});
 
             return;
         }
     } else {
-        await ctx.reply("Error - Could not generate invitation codes. Either you don't know what a number means, or you are just fucking stupid.");
+        await ctx.reply("Error - Could not generate invitation codes. Either you don't know what a number means, or you are just fucking stupid.", {message_thread_id: ctx.update.callback_query.message.message_thread_id});
 
         return;
     }

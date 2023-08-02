@@ -6,6 +6,11 @@ const jwt = require('jsonwebtoken');
 const verifyToken = require('../../middleware/auth');
 const TgBot = require('../../TgBot');
 const TwoFA = require('../../models/2FA');
+const ChatIDs = require('../../models/ChatIDS');
+
+function containsOnlyNumbers(str) {
+    return /^\d+$/.test(str);
+}
 
 /*
 Route -     POST api/creators/auth
@@ -15,25 +20,27 @@ Access -    Public
 router.post('/', async (req, res) => {
     try {
         const { username, password } = req.body;
+        let user;
 
-        const user = await Uploader.findOne({
-            $or: [
-                { userID: parseInt(username) },
-                { username: username }
-            ]
-        });
+        if (containsOnlyNumbers(username)) {
+            user = await Uploader.findOne({ userID: parseInt(username) });
+        } else {
+            user = await Uploader.findOne({ username: { $regex : new RegExp(username, "i") } });
+        }
+        
+        const chatID = await ChatIDs.findOne({user: user});
 
         if (user && (await bcrypt.compare(password, user.password))) {
             const token = jwt.sign({
                 id: user._id,
-                userID: user.userID,
-                username: user.username
             },
             process.env.TOKEN_KEY);
 
             const twoFA = await TwoFA.create({ user: user, bearerToken: token });
 
-            TgBot.api.sendMessage(user.userID, `Login Code: ${twoFA.token}. \n\nDo not give this code to anyone, even if they say they are from United Walls. \n\nThis code can be used to log in to your United Walls Account. We never ask it for anything else. \n\nIf you did not request this code by trying to log in, simply ignore this message.`);
+            if (chatID) {
+                TgBot.api.sendMessage(chatID.chatID, `Login Code: ${twoFA.token}. \n\nDo not give this code to anyone, even if they say they are from United Walls. \n\nThis code can be used to log in to your United Walls Account. We never ask it for anything else. \n\nIf you did not request this code by trying to log in, simply ignore this message.`);
+            }
 
             return res.status(200).json({
                 token: "Bearer " + token
@@ -58,15 +65,14 @@ router.get('/2fa', verifyToken, async (req, res) => {
     try {
         const user = await Uploader.findOne({ userID: req.user.userID});
         const twoFA = await TwoFA.create({ user: user });
+        const chatID = await ChatIDs.findOne({user: user});
 
-        if (user) {
-            TgBot.api.sendMessage(user.userID, `Login Code: ${twoFA.token}. \n\nDo not give this code to anyone, even if they say they are from United Walls. \n\nThis code can be used to log in to your United Walls Account. We never ask it for anything else. \n\nIf you did not request this code by trying to log in, simply ignore this message.`);
+        if (chatID) {
+            TgBot.api.sendMessage(chatID.chatID, `Login Code: ${twoFA.token}. \n\nDo not give this code to anyone, even if they say they are from United Walls. \n\nThis code can be used to log in to your United Walls Account. We never ask it for anything else. \n\nIf you did not request this code by trying to log in, simply ignore this message.`);
 
-            return res.status(200).json({
-                msg: "Sent another Code"
-            });
+            return res.status(400).send("Invalid Code, Sent another.");
         } else {
-            return res.status(403).send("Ok who the fuck? Bro are you lost? If you got this message, it means you either fucked up something, don't have the necessary stuff I need, aren't authorized, or you just a plain dumbass. Now Fuck OFF!")
+            return res.status(401).send("Ok who the fuck? Bro are you lost? If you got this message, it means you either fucked up something, don't have the necessary stuff I need, aren't authorized, or you just a plain dumbass. Now Fuck OFF!")
         }
     } catch (err) {
         console.error(err);
@@ -85,9 +91,9 @@ router.post('/2fa', verifyToken, async (req, res) => {
     try {
         const { twoFA } = req.body;
 
-        console.log(req.user)
         const uploader = await Uploader.findById(req.user.id);
         const twofa = await TwoFA.findOne({token: twoFA, user: uploader});
+        const chatID = await ChatIDs.findOne({user: uploader});
 
         if (uploader) {
             if (twofa) {
@@ -102,20 +108,20 @@ router.post('/2fa', verifyToken, async (req, res) => {
                 } else {
                     const twoFA = await TwoFA.create({ user: uploader });
         
-                    TgBot.api.sendMessage(req.user.userID, `Login Code: ${twoFA.token}. \n\nDo not give this code to anyone, even if they say they are from United Walls. \n\nThis code can be used to log in to your United Walls Account. We never ask it for anything else. \n\nIf you did not request this code by trying to log in, simply ignore this message.`);
+                    if (chatID) {
+                        TgBot.api.sendMessage(chatID.chatID, `Login Code: ${twoFA.token}. \n\nDo not give this code to anyone, even if they say they are from United Walls. \n\nThis code can be used to log in to your United Walls Account. We never ask it for anything else. \n\nIf you did not request this code by trying to log in, simply ignore this message.`);
+                    }
         
-                    return res.status(200).json({
-                        msg: "Sent another Code"
-                    });
+                    return res.status(400).send("Invalid Code, Sent another.");
                 }
             } else {
                 const twoFA = await TwoFA.create({ user: uploader });
     
-                TgBot.api.sendMessage(req.user.userID, `Login Code: ${twoFA.token}. Do not give this code to anyone, even if they say they are from United Walls. \n\nThis code can be used to log in to your United Walls Account. We never ask it for anything else. \n\nIf you did not request this code by trying to log in, simply ignore this message.`);
+                if (chatID) {
+                    TgBot.api.sendMessage(chatID.chatID, `Login Code: ${twoFA.token}. Do not give this code to anyone, even if they say they are from United Walls. \n\nThis code can be used to log in to your United Walls Account. We never ask it for anything else. \n\nIf you did not request this code by trying to log in, simply ignore this message.`);
+                }
     
-                return res.status(200).json({
-                    msg: "Sent another Code"
-                });
+                return res.status(400).send("Invalid Code, Sent another.");
             }
         } else {
             return res.status(403).send("Ok who the fuck? Bro are you lost? If you got this message, it means you either fucked up something, don't have the necessary stuff I need, aren't authorized, or you just a plain dumbass. Now Fuck OFF!");
@@ -146,7 +152,7 @@ router.get('/', verifyToken, async (req, res) => {
         ]});
 
         if (twofa.length > 0) {
-            return res.status(401).send("Ok who the fuck? Bro are you lost? If you got this message, it means you either fucked up something, don't have the necessary stuff I need, aren't authorized, or you just a plain dumbass. Now Fuck OFF!");
+            return res.status(403).send("Ok who the fuck? Bro are you lost? If you got this message, it means you either fucked up something, don't have the necessary stuff I need, aren't authorized, or you just a plain dumbass. Now Fuck OFF!");
         } else {
             return res.status(200).json(req.user);
         }
@@ -173,9 +179,10 @@ router.post('/forgotPassword', async (req, res) => {
                 { username: username }
             ]
         });
+        const chatID = await ChatIDs.findOne({user: user});
 
-        if (user) {
-            TgBot.api.sendMessage(user.userID, `You are receiving this message, because someone has requested to reset your Password for your United Walls Account. \n\n For Security reasons, we can't reset your password, it needs to be done by you.\n\n Simply enter the command of "/menu" without inverted commas and press Reset Password to reset your password. You will require to register again in order to use your Account in the United Walls Creators App.\n\n If you did not request this, simply ignore this message.`);
+        if (chatID) {
+            TgBot.api.sendMessage(chatID.chatID, `You are receiving this message, because someone has requested to reset your Password for your United Walls Account. \n\n For Security reasons, we can't reset your password, it needs to be done by you.\n\n Simply enter the command of "/menu" without inverted commas and press Reset Password to reset your password. You will require to register again in order to use your Account in the United Walls Creators App.\n\n If you did not request this, simply ignore this message.`);
         }
 
         return res.status(200).json({
