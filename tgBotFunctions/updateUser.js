@@ -3,10 +3,10 @@ const { v4: uuidv4 } = require('uuid');
 const uuid = uuidv4();
 const fs = require('fs');
 
-const updateUserMethod = async (ctx, userId) => {
+const updateUserMethod = async (ctx, messageToUpdate, userId) => {
     const dbUploader = await Uploader.findOne({userID: userId});
-    let chatMember = await ctx.api.getChatMember(-1001437820361, parseInt(userId));
-    let userPhotos = await ctx.api.getUserProfilePhotos(parseInt(userId), { limit: 1 });
+    let chatMember = await ctx.api.getChatMember(-1001437820361, userId);
+    let userPhotos = await ctx.api.getUserProfilePhotos(userId, { limit: 1 });
 
     let avatarFile = userPhotos.total_count > 0 ? await ctx.api.getFile(userPhotos.photos[0][1].file_id) : undefined;
 
@@ -44,18 +44,7 @@ const updateUserMethod = async (ctx, userId) => {
                         `<b>New Avatar</b> - \n\nAvatar saved successfully for user ${chatMember.user.username}.`, { message_thread_id: 77299, parse_mode: 'HTML' }
                     );
 
-                    await ctx.reply('Avatar Picture changed for - ' + chatMember.user.username);
-
-                    fs.access(`/home/paraskcd/United-Walls-Bot/storage/uploaders/${chatMember.user.username}/${dbUploader.avatar_uuid}.jpg`, async (error) => {
-                        if (error) {
-                            return;
-                        } else {
-                            fs.unlink(`/home/paraskcd/United-Walls-Bot/storage/uploaders/${chatMember.user.username}/${dbUploader.avatar_uuid}.jpg`, (err) => {
-                                if (err) return;
-                                console.log(`${chatMember.user.username}'s Previous Avatar was deleted`);
-                            })
-                        }
-                    });
+                    await ctx.api.editMessageText(messageToUpdate.message.chatId, messageToUpdate.message.id, 'User updated - ' + chatMember.user.username, { reply_markup: {}, message_thread_id: messageToUpdate.message.message_thread_id });
                 }
             });
         });
@@ -67,7 +56,7 @@ const updateUserMethod = async (ctx, userId) => {
             avatar_mime_type: null
         });
 
-        await ctx.reply('Could not find Avatar Picture for - ' + chatMember.user.username + '. Make sure to your privacy settings allow to upload your Profile Picture to our database, or you can just use our Bot to upload a Profile Pic.');
+        await ctx.api.editMessageText(messageToUpdate.message.chatId, messageToUpdate.message.id, 'User updated without Avatar - ' + chatMember.user.username, { reply_markup: {}, message_thread_id: messageToUpdate.message.message_thread_id });
 
         if ('avatar_uuid' in dbUploader && dbUploader.avatar_uuid != null) {
             fs.access(`/home/paraskcd/United-Walls-Bot/storage/uploaders/${chatMember.user.username}/${dbUploader.avatar_uuid}.${dbUploader.avatar_mime_type == "image/jpeg" ? "jpg" : "png"}`, async (error) => {
@@ -82,8 +71,6 @@ const updateUserMethod = async (ctx, userId) => {
             });
         }
     }
-
-    await ctx.reply('Uploader updated - ' + chatMember.user.username);
 }
 
 module.exports = updateUserMethod;

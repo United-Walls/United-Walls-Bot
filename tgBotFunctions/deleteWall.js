@@ -1,36 +1,40 @@
 const Category = require('../models/Category');
+const Uploader = require('../models/Uploader');
 const Walls = require('../models/Walls');
 const fs = require('fs');
 
-const deleteWall = async (wallId) => {
-	const wall = await Walls.findById(wallId).populate('category');
-	const category = await Category.findById(wall.category.id).populate('walls');
-	let newCategoryWalls = category.walls.filter((wall) => wall.id != wallId);
-	if (newCategoryWalls.length == 0) {
-		await Category.findByIdAndDelete(wall.category.id);
-	} else {
-		await Category.findByIdAndUpdate(wall.category.id, {
-			walls: newCategoryWalls,
-		});
-	}
-	await Walls.findByIdAndDelete(wallId);
-	fs.rm(`/home/paraskcd/United-Walls-Bot/storage/wallpapers/${category.name.replace(/\s/g, '')}/${wall.file_name}.${wall.mime_type == "image/jpeg" ? "jpg" : "png"}`, { recursive: true }, (err) => {
-		if(err){
-			// File deletion failed
-			console.error(err.message);
-			return;
-		}
-		console.log(`${wall.file_name}.${wall.mime_type == "image/jpeg" ? "jpg" : "png"} Full Res deleted successfuly`);
+const deleteWall = async (ctx, wallId, messageToUpdate) => {
+	const deletedWall = await Walls.findByIdAndDelete(wallId);
+	const category = await Category.findByIdAndUpdate(deletedWall.category, {
+		$pull: { walls: deletedWall.id }
 	});
-	fs.rm(`/home/paraskcd/United-Walls-Bot/storage/wallpapers/${category.name.replace(/\s/g, '')}/thumbnails/${wall.file_name}.${wall.mime_type == "image/jpeg" ? "jpg" : "png"}`, { recursive: true }, (err) => {
-		if(err){
-			// File deletion failed
-			console.error(err.message);
-			return;
-		}
-		console.log(`${wall.file_name}.${wall.mime_type == "image/jpeg" ? "jpg" : "png"} Thumbnail deleted successfuly`);
+	await Uploader.findByIdAndUpdate(deletedWall.creator, {
+		$pull: { walls: deletedWall.id }
 	});
-	return wall.file_name;
+
+	fs.stat(`./storage/wallpapers/${category.name}/${deletedWall.file_name}.${deletedWall.file_ext}`, function (err, stats) {
+		if (err) {
+			return console.error(err);
+		}
+		
+		fs.unlink(`./storage/wallpapers/${category.name}/${deletedWall.file_name}.${deletedWall.file_ext}`,function(err){
+				if(err) return console.log(err);
+				console.log(`${category.name}/${deletedWall.file_name}.${deletedWall.file_ext} file deleted successfully from temp folder`);
+		});  
+	});
+
+	fs.stat(`./storage/wallpapers/${category.name}/thumbnails/${deletedWall.file_name}.${deletedWall.file_ext}`, function (err, stats) {
+		if (err) {
+			return console.error(err);
+		}
+		
+		fs.unlink(`./storage/wallpapers/${category.name}/thumbnails/${deletedWall.file_name}.${deletedWall.file_ext}`,function(err){
+				if(err) return console.log(err);
+				console.log(`${category.name}/${deletedWall.file_name}.${deletedWall.file_ext} file deleted successfully from temp folder`);
+		});  
+	});
+	
+	await ctx.api.editMessageText(messageToUpdate.message.chatId, messageToUpdate.message.id, "Wallpaper - " + deletedWall.file_name + " deleted successfully.", { reply_markup: {}, message_thread_id: messageToUpdate.message.message_thread_id });
 };
 
 module.exports = deleteWall;

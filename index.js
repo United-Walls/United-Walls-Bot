@@ -46,10 +46,16 @@ const storage = multer.diskStorage({
 });
 let array = 0;
 const wallStorage = multer.diskStorage({
-  destination: (req, file, cb) => {
+  destination: async (req, file, cb) => {
     const { categoryName } = req.body;
+    let catName = categoryName.replace(/([A-Z])/g, ' $1').trim();
     const path = `storage/wallpapers/temp/${categoryName}`;
-    fs.mkdirSync(path, { recursive: true });
+    await fs.promises.mkdir(path, { recursive: true });
+    const pathReal = `storage/wallpapers/${categoryName}/thumbnails/`;
+    await fs.promises.mkdir(pathReal, {recursive: true});
+    await Category.findOneAndUpdate({name: catName}, {name: catName}, {upsert: true});
+    const category = await Category.findOne({name: catName});
+    req.body.categoryId = category._id;
     cb(null, path);
   },
   filename: async (req, file, cb) => {
@@ -136,6 +142,7 @@ app.use('/api/creators/profile/upload', verifyToken, upload.single('profilePic')
         return res.status(500).send("Something went wrong. Please try again.");
   }
 });
+app.use('/api/creators/wallpapers', require('./api/creators/wallpapers'));
 app.use('/api/creators/wallpapers/upload', verifyToken, wallpaperUpload.array('walls'), async (req, res) => {
   try {
     array = 0;
@@ -144,52 +151,124 @@ app.use('/api/creators/wallpapers/upload', verifyToken, wallpaperUpload.array('w
 
     if (req.files.length > 0) {
       for(let i = 0; i < req.files.length; i++) {
-        // if (req.user.userID === )
         const file = req.files[i];
-  
         const creator = await Uploader.findById(req.user.id);
-  
-        const newWall = await Walls.create({
-          file_name: `${file.filename.split('.')[0]}`,
-          file_id: "",
-          thumbnail_id: "",
-          file_url: "",
-          thumbnail_url: "",
-          mime_type: file.mimetype,
-          category: categoryId,
-          addedBy: req.user.username,
-          hidden: true,
-          file_ext: file.filename.split('.')[1],
-          creator: creator
-        });
-  
-        const inlineKeyboard = new InlineKeyboard()
-          .text('Approve', `A_${newWall.id}`)
-          .row()
-          .text('Deny', `D_${newWall.id}`);
-  
-        const message = await TgBot.api.sendDocument(-1001731686694, new InputFile(`storage/wallpapers/temp/${categoryName}/${file.filename.split('.')[0]}.${file.filename.split('.')[1]}`), { message_thread_id: 82113, reply_markup: inlineKeyboard, caption: `Creator: ${req.user.username}\n\nUploaded a wallpaper in the database.\n\nApprove or deny?` });
-  
-        await Walls.findByIdAndUpdate(newWall.id, { file_id: message.document.file_id, thumbnail_id: message.document.thumb.file_id });
-  
-        const tempWall = await TempWalls.findOneAndUpdate({ wall: newWall }, { wall: newWall, messageID: message.message_id }, { upsert: true, new: true, setDefaultsOnInsert: true });
-  
-        fs.stat(`./storage/wallpapers/temp/${categoryName}/${file.filename.split('.')[0]}.${file.filename.split('.')[1]}`, function (err, stats) {
-          if (err) {
-              return console.error(err);
-          }
-       
-          fs.unlink(`./storage/wallpapers/temp/${categoryName}/${file.filename.split('.')[0]}.${file.filename.split('.')[1]}`,function(err){
-               if(err) return console.log(err);
-               console.log(`${file.filename.split('.')[0]}.${file.filename.split('.')[1]} file deleted successfully from temp folder`);
-          });  
-        });
+        const category = await Category.findById(categoryId);
+        if (
+          req.user.userID === 975024565
+          || req.user.userID === 934949695
+          || req.user.userID === 1889905927 
+          || req.user.userID === 127070302
+        ) {
+          const newWall = await Walls.create({
+            file_name: `${file.filename.split('.')[0]}`,
+            file_id: "",
+            thumbnail_id: "",
+            file_url: `https://unitedwalls.paraskcd.com/image/${categoryName}/${file.filename.split('.')[0]}.${file.filename.split('.')[1]}`,
+            thumbnail_url: `https://unitedwalls.paraskcd.com/image/${categoryName}/thumbnails/${file.filename.split('.')[0]}.${file.filename.split('.')[1]}`,
+            mime_type: file.mimetype,
+            category: categoryId,
+            addedBy: req.user.username,
+            hidden: false,
+            file_ext: file.filename.split('.')[1],
+            creator: creator
+          });
 
-        tempWalls.push(tempWall);
+          await Category.findByIdAndUpdate(category.id, {
+            $push: { walls: newWall },
+            });
+          
+          await Uploader.findByIdAndUpdate(creator.id, {
+            $push: { walls: newWall },
+          });
+
+          const message = await TgBot.api.sendDocument(-1001437820361, new InputFile(`storage/wallpapers/temp/${categoryName}/${file.filename.split('.')[0]}.${file.filename.split('.')[1]}`), { message_thread_id: "185847", caption: `${newWall.file_name} uploaded by ${newWall.addedBy}` });
+
+          await Walls.findByIdAndUpdate(newWall.id, { file_id: message.document.file_id, thumbnail_id: message.document.thumb.file_id });
+
+          let fileTg = await TgBot.api.getFile(message.document.file_id);
+          let thumbnailTg = await TgBot.api.getFile(message.document.thumb.file_id);
+
+          fs.rename(fileTg.file_path, `/home/paraskcd/United-Walls-Bot/storage/wallpapers/${category.name}/${newWall.file_name}.${newWall.file_ext}`, async (err) => {
+            if (err) {
+                console.error("Error Found: " + err + "\n\n");
+                await TgBot.api.sendMessage(
+                  -1001731686694,
+                    `<b>Error</b> - \n\n<b>Wallpaper</b> - ${newWall.file_name} added to database.\n\n<b>Object id</b> - ${newWall._id} (for reference).\n\n<b>Approved by</b> - ${ctx.update.callback_query.from.username}. Added by${wall.addedBy}.\n\nHowever Wall did not save in storage, because of \n\n${err}`, { message_thread_id: 77299, parse_mode: 'HTML' }
+                  );
+                } else {
+                  await TgBot.api.sendMessage(
+                    -1001731686694,
+                    `<b>Existing category</b> - ${category.name}.\n\n<b>Wallpaper</b> - ${newWall.file_name} added to database.\n\n<b>Object id</b> - ${newWall._id} (for reference).\n\n<b>Approved by</b> - ${ctx.update.callback_query.from.username}. Added by${wall.addedBy}.\n\nWallpaper saved in storage as well.`, { message_thread_id: 77299, parse_mode: 'HTML' }
+                  );
+                }
+          });
+    
+          fs.rename(thumbnailTg.file_path, `/home/paraskcd/United-Walls-Bot/storage/wallpapers/${category.name}/thumbnails/${newWall.file_name}.${newWall.file_ext}`, async (err) => {
+            if (err) {
+            console.error("Error Found:", err);
+            await TgBot.api.sendMessage(
+                -1001731686694,
+                `<b>Error</b> - \n\n<b>Existing category</b> - ${category.name}.\n\n<b>Wallpaper</b> - ${newWall.file_name} added to database.\n\n<b>Object id</b> - ${newWall._id} (for reference).\n\n<b>Approved by</b> - ${ctx.update.callback_query.from.username}. Added by${wall.addedBy}.\n\nHowever Thumbnail did not save in storage, because of \n\n${err}.`, { message_thread_id: 77299, parse_mode: 'HTML' }
+              );
+            } else {
+              await TgBot.api.sendMessage(
+                -1001731686694,
+                `Thumbnail also saved in storage as well.`, { message_thread_id: 77299 }
+              );
+            }
+          });
+
+          fs.stat(`./storage/wallpapers/temp/${categoryName}/${file.filename.split('.')[0]}.${file.filename.split('.')[1]}`, function (err, stats) {
+            if (err) {
+                return console.error(err);
+            }
+        
+            fs.unlink(`./storage/wallpapers/temp/${categoryName}/${file.filename.split('.')[0]}.${file.filename.split('.')[1]}`,function(err){
+                if(err) return console.log(err);
+                console.log(`${file.filename.split('.')[0]}.${file.filename.split('.')[1]} file deleted successfully from temp folder`);
+            });  
+          });
+
+          tempWalls.push({
+            wall: newWall.id
+          });
+        } else {
+          const newWall = await Walls.create({
+            file_name: `${file.filename.split('.')[0]}`,
+            file_id: "",
+            thumbnail_id: "",
+            file_url: "",
+            thumbnail_url: "",
+            mime_type: file.mimetype,
+            category: categoryId,
+            addedBy: req.user.username,
+            hidden: true,
+            file_ext: file.filename.split('.')[1],
+            creator: creator
+          }); 
+          const inlineKeyboard = new InlineKeyboard()
+            .text('Approve', `A_${newWall.id}`)
+            .row()
+            .text('Deny', `D_${newWall.id}`); 
+          const message = await TgBot.api.sendDocument(-1001731686694, new InputFile(`storage/wallpapers/temp/${categoryName}/${file.filename.split('.')[0]}.${file.filename.split('.')[1]}`), { message_thread_id: 82113, reply_markup: inlineKeyboard, caption: `Creator: ${req.user.username}\n\nUploaded a wallpaper in the database.\n\nApprove or deny?` });
+          await Walls.findByIdAndUpdate(newWall.id, { file_id: message.document.file_id, thumbnail_id: message.document.thumb.file_id });
+          const tempWall = await TempWalls.findOneAndUpdate({ wall: newWall }, { wall: newWall, messageID: message.message_id }, { upsert: true, new: true, setDefaultsOnInsert: true });
+          fs.stat(`./storage/wallpapers/temp/${categoryName}/${file.filename.split('.')[0]}.${file.filename.split('.')[1]}`, function (err, stats) {
+            if (err) {
+                return console.error(err);
+            }
+        
+            fs.unlink(`./storage/wallpapers/temp/${categoryName}/${file.filename.split('.')[0]}.${file.filename.split('.')[1]}`,function(err){
+                if(err) return console.log(err);
+                console.log(`${file.filename.split('.')[0]}.${file.filename.split('.')[1]} file deleted successfully from temp folder`);
+            });  
+          });
+
+          tempWalls.push(tempWall);
+        }
       }
-
       return res.status(200).json(tempWalls);
-
     } else {
       return res.status(400).send("I didn't receive any file. Do you even know how to send?");
     }
@@ -203,6 +282,56 @@ app.use('/api/creators/wallpapers/upload', verifyToken, wallpaperUpload.array('w
         return res.status(500).send("Something went wrong. Please try again.");
   }
 });
+
+app.use('/api/update', verifyToken, async (req, res) => {
+  try {
+    if(req.user.userID === 934949695) {
+      const walls = await Walls.find();
+      await Promise.all(
+        walls.map(async (wall, index) => {
+          await Uploader.findByIdAndUpdate(wall.creator, {
+            $push: { walls: wall.id }
+          });
+    
+          await Category.findByIdAndUpdate(wall.category, {
+            $push: { walls: wall.id }
+          });
+          return;
+        })
+      )
+    }
+
+    res.sendStatus(204);
+  } catch(err) {
+    console.error(err);
+    res.sendStatus(500);
+  }
+})
+
+app.use('/api/destroy', verifyToken, async (req, res) => {
+  try {
+    if(req.user.userID === 934949695) {
+      const walls = await Walls.find();
+      await Promise.all(
+        walls.map(async (wall, index) => {
+          await Uploader.findByIdAndUpdate(wall.creator, {
+            $pull: { walls: wall.id }
+          });
+    
+          await Category.findByIdAndUpdate(wall.category, {
+            $pull: { walls: wall.id }
+          });
+          return;
+        })
+      )
+    }
+
+    res.sendStatus(204);
+  } catch(err) {
+    console.error(err);
+    res.sendStatus(500);
+  }
+})
 
 // Handles any requests that don't match the ones above
 app.get('*', (req,res) =>{

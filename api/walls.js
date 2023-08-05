@@ -5,6 +5,7 @@ const TgBot = require('../TgBot');
 var fs = require('fs');
 const Category = require('../models/Category');
 const WallOfDay = require('../models/WallOfDay');
+const Uploader = require('../models/Uploader');
 const shuffle = (array) => {
 	let currentIndex = array.length,  randomIndex;
 
@@ -219,10 +220,14 @@ router.get('/queries', async (req, res) => {
 		const page = req.query.page;
 		const numberOfWalls = 50;
 
-		const walls = await Walls.find().sort({ createdAt: -1 }).collation({
+		const walls = await Walls.find({ hidden: false }).sort({ createdAt: -1 }).collation({
 			locale: 'en_US',
 			numericOrdering: true,
-		}).skip(page * numberOfWalls).limit(numberOfWalls);
+		}).select('-timesFavourite -timesDownloaded -hidden').skip(page * numberOfWalls).limit(numberOfWalls)
+		.populate({
+			path: 'creator',
+			select: '_id username'
+		});
 
 		return res.json(shuffle(walls));
 	} catch (err) {
@@ -334,37 +339,33 @@ Desc -      Get all walls
 Access -    Public
 */
 
-router.get('/update', async (req, res) => {
-	try {
-		const d = new Date();
-		console.log("Running update \nUpdate Time: " + d.toString())
-		const walls = await Walls.find();
+// router.get('/update', async (req, res) => {
+// 	try {
+// 		const d = new Date();
+// 		console.log("Running update \nUpdate Time: " + d.toString())
+// 		const walls = await Walls.find();
 
-		await Promise.all(
-			walls.map(async (wall, index) => {
-				const category = await Category.findById(wall.category);
+// 		await Promise.all(
+// 			walls.map(async (wall, index) => {
+// 				await Walls.findByIdAndUpdate(wall.id, {
+// 					hidden: false
+// 				})
+// 				return;
+// 			})
+// 		)
 
-				await Walls.findByIdAndUpdate(wall.id, { 
-					file_url: `https://unitedwalls.paraskcd.com/image/${category.name.replace(/\s/g, '')}/${wall.file_name}.${wall.mime_type == "image/jpeg" ? "jpg" : "png"}`,
-					thumbnail_url: `https://unitedwalls.paraskcd.com/image/${category.name.replace(/\s/g, '')}/thumbnails/${wall.file_name}.${wall.mime_type == "image/jpeg" ? "jpg" : "png"}`
-				});
-
-				return;
-			})
-		)
-
-		return
-	} catch (err) {
-		console.error(err.message);
-		res.status(500).json({
-			errors: [
-				{
-					msg: 'WTF did you do now? Fuck you! This is a fucking Server Error, thanks for fucking it up asshole!',
-				},
-			],
-		});
-	}
-});
+// 		return res.sendStatus(204);
+// 	} catch (err) {
+// 		console.error(err.message);
+// 		res.status(500).json({
+// 			errors: [
+// 				{
+// 					msg: 'WTF did you do now? Fuck you! This is a fucking Server Error, thanks for fucking it up asshole!',
+// 				},
+// 			],
+// 		});
+// 	}
+// });
 
 /*
 Route -     GET api/walls

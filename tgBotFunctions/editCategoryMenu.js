@@ -1,6 +1,6 @@
 const Category = require('../models/Category');
 
-const editCategoryMenu = async (ctx) => {
+const editCategoryMenu = async (ctx, messageToUpdate) => {
 	const allCategories = await Category.find().sort({ file_name: 1 });
 
 	let editKeyboard = { inline_keyboard: [] };
@@ -42,9 +42,7 @@ const editCategoryMenu = async (ctx) => {
 		{ text: 'Exit', callback_data: 'exit-payload' },
 	]);
 
-	await ctx.reply(`Choose a Category you want to replace this wallpaper to -`, {
-		reply_markup: editKeyboard, message_thread_id: ctx.update.callback_query.message.message_thread_id
-	});
+	await ctx.api.editMessageText(messageToUpdate.message.chatId, messageToUpdate.message.id, `Choose a Category you want to replace this wallpaper to -`, { reply_markup: editKeyboard, message_thread_id: messageToUpdate.message.message_thread_id });
 };
 
 module.exports = editCategoryMenu;

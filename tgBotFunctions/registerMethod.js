@@ -4,16 +4,19 @@ const { v4: uuidv4 } = require('uuid');
 const uuid = uuidv4();
 var fs = require('fs');
 
-const register = async (ctx) => {
-    const uploaderExists = await Uploader.find({ userID: ctx.update.message.from.id });
-    let password = ctx.update.message.text;
+const registerMethod = async (ctx, messageToUpdate) => {
+    const uploaderExists = await Uploader.find({ userID: ctx.message.from.id });
+    let password = ctx.message.text;
+
     const salt = await bcryptjs.genSalt(10);
     password = await bcryptjs.hash(password, salt);
 
     if (uploaderExists.length > 0) {
-        const uploader = await Uploader.findOneAndUpdate({ userID: ctx.update.message.from.id }, { password: password });
+        const uploader = await Uploader.findOneAndUpdate({ userID: ctx.message.from.id }, { password: password });
     
-        await ctx.reply('Registration Successful - ' + uploader.username + '. I hope you remember the password because it\'s really encrypted for us so we do not know. You\'ll need your telegram ID / Username and the Password to login. Your ID is ' + ctx.update.message.from.id + ' and username is ' + uploader.username + '. It is recommended that you delete all chats with this Bot as well.');
+        await ctx.api.deleteMessage(ctx.message.chat.id, ctx.message.message_id);
+
+        await ctx.api.editMessageText(messageToUpdate.message.chatId, messageToUpdate.message.id, 'Registration Successful - ' + uploader.username + '. I hope you remember the password because it\'s really encrypted for us so we do not know. You\'ll need your telegram ID / Username and the Password to login. Your ID is ' + ctx.message.from.id + ' and username is ' + uploader.username + '.' + " This message will be deleted in 10 seconds.", { reply_markup: {}, message_thread_id: messageToUpdate.message.message_thread_id });
     } else {
         let chatMember = await ctx.api.getChatMember(-1001437820361, ctx.update.message.from.id);
         let userPhotos = await ctx.api.getUserProfilePhotos(ctx.update.message.from.id, { limit: 1 });
@@ -39,6 +42,10 @@ const register = async (ctx) => {
                     avatar_uuid: uuid,
                     avatar_mime_type: 'image/jpeg'
                 });
+
+				await ctx.api.deleteMessage(ctx.message.chat.id, ctx.message.message_id);
+
+                await ctx.api.editMessageText(messageToUpdate.message.chatId, messageToUpdate.message.id,'Registration Successful - ' + newUploader.username + '. I hope you remember the password because it\'s really encrypted for us so we do not know. You\'ll need your telegram ID / Username and the Password to login. Your ID is ' + ctx.message.from.id + ' and username is ' + newUploader.username + '. This message will be deleted in 10 seconds.', { reply_markup: {}, message_thread_id: messageToUpdate.message.message_thread_id });
     
                 fs.rename(avatarFile.file_path, `/home/paraskcd/United-Walls-Bot/storage/uploaders/${chatMember.user.username}/${uuid}.jpg`, async (err) => {
                     if (err) {
@@ -54,6 +61,8 @@ const register = async (ctx) => {
                         );
                     }
                 });
+
+                return;
             });
         } else {
             let newUploader = await Uploader.create({
@@ -64,10 +73,16 @@ const register = async (ctx) => {
                 avatar_uuid: null,
                 avatar_mime_type: null
             });
+
+            await ctx.api.deleteMessage(ctx.message.chat.id, ctx.message.message_id);
+            
+            await ctx.api.editMessageText(messageToUpdate.message.chatId, messageToUpdate.message.id,'Registration Successful - ' + newUploader.username + '. I hope you remember the password because it\'s really encrypted for us so we do not know. You\'ll need your telegram ID / Username and the Password to login. Your ID is ' + ctx.message.from.id + ' and username is ' + newUploader.username + '. This message will be deleted in 10 seconds.', { reply_markup: {}, message_thread_id: messageToUpdate.message.message_thread_id });
+
+            return;
         }
-        await ctx.reply('Registration Successful - ' + chatMember.user.username + '. I hope you remember the password because it\'s really encrypted for us so we do not know. You\'ll need your telegram ID / Username and the Password to login. Your ID is ' + ctx.update.message.from.id + ' and username is ' + chatMember.user.username + '. It is recommended that you delete all chats with this Bot as well.');
+        
     }
     
 }
 
-module.exports = register;
+module.exports = registerMethod

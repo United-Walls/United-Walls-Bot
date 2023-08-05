@@ -1,13 +1,11 @@
 const Uploader = require("../models/Uploader")
 
-const uploaderWallsMenu = async (ctx, userId, page) => {
+const uploaderWallsMenu = async (ctx, messageToUpdate, userId, page) => {
     let intPage = parseInt(page);
     const numberOfWalls = 16;
-
     const uploaderWallCount = await Uploader.findOne({userID: userId});
-
+    console.log(uploaderWallCount);
     const totalNumberOfWalls = uploaderWallCount.walls.length;
-
     const uploader = await Uploader.findOne({userID: userId}).populate({
 		path: 'walls',
 		options: {
@@ -17,7 +15,6 @@ const uploaderWallsMenu = async (ctx, userId, page) => {
             limit: numberOfWalls
 		},
 	});
-
     const walls = uploader.walls;
 
     let editKeyboard = { inline_keyboard: [] };
@@ -76,9 +73,7 @@ const uploaderWallsMenu = async (ctx, userId, page) => {
         );
     }
 
-	await ctx.reply(`Choose a Wallpaper to edit -`, {
-		reply_markup: editKeyboard,
-	});
+	await ctx.api.editMessageText(messageToUpdate.message.chatId, messageToUpdate.message.id, `Choose a Wallpaper to edit -`, { reply_markup: editKeyboard, message_thread_id: messageToUpdate.message.message_thread_id });
 }
 
 module.exports = uploaderWallsMenu;

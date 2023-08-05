@@ -29,5 +29,5 @@ module.exports = async (ctx, next) => {
 		{ parse_mode: 'MarkdownV2', message_thread_id: ctx.update.message.message_thread_id }
 	);
 
-    next();
+    await next();
 }

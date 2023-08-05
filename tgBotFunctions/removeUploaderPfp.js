@@ -1,9 +1,9 @@
 const Uploader = require("../models/Uploader")
 var fs = require('fs');
 
-const removeUploaderPfpMethod = async (ctx, userId) => {
+const removeUploaderPfpMethod = async (ctx, messageToUpdate, userId) => {
     const beforeDeleteUploader = await Uploader.findOne({userID: userId});
-    let chatMember = await ctx.api.getChatMember(-1001437820361, parseInt(userId));
+    let chatMember = await ctx.api.getChatMember(-1001437820361, userId);
 
     await Uploader.findOneAndUpdate( {userID: userId}, {
         username: chatMember.user.username,
@@ -23,7 +23,7 @@ const removeUploaderPfpMethod = async (ctx, userId) => {
         }
     });
 
-    await ctx.reply('Uploader profile picture removed - ' + chatMember.user.username);
+    await ctx.api.editMessageText(messageToUpdate.message.chatId, messageToUpdate.message.id, 'Uploader profile picture removed - ' + chatMember.user.username, { reply_markup: {}, message_thread_id: messageToUpdate.message.message_thread_id });
 }
 
 module.exports = removeUploaderPfpMethod;

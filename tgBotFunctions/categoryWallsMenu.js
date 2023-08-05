@@ -1,6 +1,6 @@
 const Category = require('../models/Category');
 
-const categoryWallsMenu = async (ctx, data) => {
+const categoryWallsMenu = async (ctx, messageToUpdate, data) => {
 	const category_id = data.split('_')[1];
 
 	const category = await Category.findById(category_id).populate({
@@ -55,9 +55,7 @@ const categoryWallsMenu = async (ctx, data) => {
 		{ text: 'Exit', callback_data: 'exit-payload' },
 	]);
 
-	await ctx.reply(`Choose a Wallpaper to edit -`, {
-		reply_markup: editKeyboard, message_thread_id: ctx.update.callback_query.message.message_thread_id
-	});
+	await ctx.api.editMessageText(messageToUpdate.message.chatId, messageToUpdate.message.id, `Choose a Wallpaper to edit -`, { reply_markup: editKeyboard, message_thread_id: messageToUpdate.message.message_thread_id });
 };
 
 module.exports = categoryWallsMenu;

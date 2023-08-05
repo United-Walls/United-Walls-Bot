@@ -1,6 +1,6 @@
 const Walls = require('../models/Walls');
 
-const wallMenu = async (ctx, data, chat_id) => {
+const wallMenu = async (ctx, messageToUpdate, data) => {
 	const wall_id = data.split('_')[1];
 
 	const wall = await Walls.findById(wall_id)
@@ -17,10 +17,12 @@ const wallMenu = async (ctx, data, chat_id) => {
 		],
 	};
 
-	await ctx.api.sendDocument(chat_id, wall.file_id);
-	await ctx.reply(`Edit ${wall.file_name}?`, {
+	await ctx.api.sendDocument(messageToUpdate.message.chatId, wall.file_id);
+	const message = await ctx.reply(`Edit ${wall.file_name}?`, {
 		reply_markup: editKeyboard,
 	});
+
+	return message;
 };
 
 module.exports = wallMenu;

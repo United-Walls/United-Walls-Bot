@@ -1,7 +1,7 @@
 const Uploader = require("../models/Uploader");
 
-const editUserMenuMethod = async (ctx, userId) => {
-    const uploader = await Uploader.findOne({ userID: parseInt(userId) });
+const editUserMenuMethod = async (ctx, messageToUpdate, userId) => {
+    const uploader = await Uploader.findOne({ userID: userId });
 
     let editKeyboard;
 
@@ -10,7 +10,7 @@ const editUserMenuMethod = async (ctx, userId) => {
             inline_keyboard: [
                 [{ text: 'Edit username', callback_data: `EUs_${userId}`}],
                 [{ text: 'Add Avatar (can be your logo, profile pic, etc)', callback_data: `Av_${userId}`}],
-                [{ text: 'Go back', callback_data: `Upl_${userId}` }],
+                [{ text: 'Go back', callback_data: `go-back-from-edit-payload` }],
                 [{ text: 'Exit', callback_data: 'exit-payload' }],
             ],
         };
@@ -20,15 +20,13 @@ const editUserMenuMethod = async (ctx, userId) => {
                 [{ text: 'Edit username', callback_data: `EUs_${userId}`}],
                 [{ text: 'Change Avatar (can be your logo, profile pic, etc)', callback_data: `Av_${userId}`}],
                 [{ text: 'Remove Profile Picture', callback_data: `RPfp_${userId}`}],
-                [{ text: 'Go back', callback_data: `Upl_${userId}` }],
+                [{ text: 'Go back', callback_data: `go-back-from-edit-payload` }],
                 [{ text: 'Exit', callback_data: 'exit-payload' }],
             ],
         };
     }
 
-    await ctx.reply(`Edit User - ${ uploader.username } -`, {
-		reply_markup: editKeyboard, message_thread_id: ctx.update.callback_query.message.message_thread_id
-	});
+    await ctx.api.editMessageText(messageToUpdate.message.chatId, messageToUpdate.message.id, `Edit User - ${ uploader.username } -`, { reply_markup: editKeyboard, message_thread_id: messageToUpdate.message.message_thread_id });
 }
 
 module.exports = editUserMenuMethod;
