@@ -5,6 +5,7 @@ const fs = require('fs');
 
 const addAvatarMethod = async (ctx, messageToUpdate, userId) => {
     const dbUploader = await Uploader.findOne({ userID: userId });
+    const message = ctx.message;
 
     if ('document' in message && (message.document?.mime_type == 'image/png' || message.document?.mime_type == 'image/jpg' || message.document?.mime_type == 'image/jpeg')) {
         let uploader = await Uploader.find({ userID: userId });
