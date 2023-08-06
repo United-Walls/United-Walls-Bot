@@ -48,13 +48,14 @@ let array = 0;
 const wallStorage = multer.diskStorage({
   destination: async (req, file, cb) => {
     const { categoryName } = req.body;
-    let catName = categoryName.replace(/([A-Z])/g, ' $1').trim();
-    const path = `storage/wallpapers/temp/${categoryName}`;
+    // const regexp = /([A-Z][a-z]+\s)*([A-Z][a-z]+)/g
+    req.body.categoryName = req.body.categoryName.replace(/\s/g, '').trim()
+    const path = `storage/wallpapers/temp/${req.body.categoryName}`;
     await fs.promises.mkdir(path, { recursive: true });
-    const pathReal = `storage/wallpapers/${categoryName}/thumbnails/`;
+    const pathReal = `storage/wallpapers/${req.body.categoryName}/thumbnails/`;
     await fs.promises.mkdir(pathReal, {recursive: true});
-    await Category.findOneAndUpdate({name: catName}, {name: catName}, {upsert: true});
-    const category = await Category.findOne({name: catName});
+    await Category.findOneAndUpdate({name: categoryName}, {name: categoryName}, {upsert: true});
+    const category = await Category.findOne({name: categoryName});
     req.body.categoryId = category._id;
     cb(null, path);
   },
@@ -189,27 +190,27 @@ app.use('/api/creators/wallpapers/upload', verifyToken, wallpaperUpload.array('w
           let fileTg = await TgBot.api.getFile(message.document.file_id);
           let thumbnailTg = await TgBot.api.getFile(message.document.thumb.file_id);
 
-          fs.rename(fileTg.file_path, `/home/paraskcd/United-Walls-Bot/storage/wallpapers/${category.name}/${newWall.file_name}.${newWall.file_ext}`, async (err) => {
+          fs.rename(fileTg.file_path, `/home/paraskcd/United-Walls-Bot/storage/wallpapers/${categoryName}/${newWall.file_name}.${newWall.file_ext}`, async (err) => {
             if (err) {
                 console.error("Error Found: " + err + "\n\n");
                 await TgBot.api.sendMessage(
                   -1001731686694,
-                    `<b>Error</b> - \n\n<b>Wallpaper</b> - ${newWall.file_name} added to database.\n\n<b>Object id</b> - ${newWall._id} (for reference).\n\n<b>Approved by</b> - ${ctx.update.callback_query.from.username}. Added by${wall.addedBy}.\n\nHowever Wall did not save in storage, because of \n\n${err}`, { message_thread_id: 77299, parse_mode: 'HTML' }
+                    `<b>Error</b> - \n\n<b>Wallpaper</b> - ${newWall.file_name} added to database.\n\n<b>Object id</b> - ${newWall._id} (for reference).\n\n Added by${newWall.addedBy}.\n\nHowever Wall did not save in storage, because of \n\n${err}`, { message_thread_id: 77299, parse_mode: 'HTML' }
                   );
                 } else {
                   await TgBot.api.sendMessage(
                     -1001731686694,
-                    `<b>Existing category</b> - ${category.name}.\n\n<b>Wallpaper</b> - ${newWall.file_name} added to database.\n\n<b>Object id</b> - ${newWall._id} (for reference).\n\n<b>Approved by</b> - ${ctx.update.callback_query.from.username}. Added by${wall.addedBy}.\n\nWallpaper saved in storage as well.`, { message_thread_id: 77299, parse_mode: 'HTML' }
+                    `<b>Existing category</b> - ${categoryName}.\n\n<b>Wallpaper</b> - ${newWall.file_name} added to database.\n\n<b>Object id</b> - ${newWall._id} (for reference).\n\n Added by${newWall.addedBy}.\n\nWallpaper saved in storage as well.`, { message_thread_id: 77299, parse_mode: 'HTML' }
                   );
                 }
           });
     
-          fs.rename(thumbnailTg.file_path, `/home/paraskcd/United-Walls-Bot/storage/wallpapers/${category.name}/thumbnails/${newWall.file_name}.${newWall.file_ext}`, async (err) => {
+          fs.rename(thumbnailTg.file_path, `/home/paraskcd/United-Walls-Bot/storage/wallpapers/${categoryName}/thumbnails/${newWall.file_name}.${newWall.file_ext}`, async (err) => {
             if (err) {
             console.error("Error Found:", err);
             await TgBot.api.sendMessage(
                 -1001731686694,
-                `<b>Error</b> - \n\n<b>Existing category</b> - ${category.name}.\n\n<b>Wallpaper</b> - ${newWall.file_name} added to database.\n\n<b>Object id</b> - ${newWall._id} (for reference).\n\n<b>Approved by</b> - ${ctx.update.callback_query.from.username}. Added by${wall.addedBy}.\n\nHowever Thumbnail did not save in storage, because of \n\n${err}.`, { message_thread_id: 77299, parse_mode: 'HTML' }
+                `<b>Error</b> - \n\n<b>Existing category</b> - ${categoryName}.\n\n<b>Wallpaper</b> - ${newWall.file_name} added to database.\n\n<b>Object id</b> - ${newWall._id} (for reference).\n\n Added by${newWall.addedBy}.\n\nHowever Thumbnail did not save in storage, because of \n\n${err}.`, { message_thread_id: 77299, parse_mode: 'HTML' }
               );
             } else {
               await TgBot.api.sendMessage(

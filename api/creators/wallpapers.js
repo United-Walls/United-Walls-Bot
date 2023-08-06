@@ -52,30 +52,30 @@ router.delete('/', verifyToken, async (req, res) => {
         await Uploader.findByIdAndUpdate(deletedWall.creator, {
             $pull: { walls: deletedWall.id }
         });
-        category = await Category.findById(deleteWall.category);
+        category = await Category.findById(deletedWall.category);
         if (category.walls.length == 0) {
             await Category.findByIdAndDelete(deletedWall.category);
         }
 
-        fs.stat(`./storage/wallpapers/${category.name}/${deletedWall.file_name}.${deletedWall.file_ext}`, function (err, stats) {
+        fs.stat(`./storage/wallpapers/${category.name.replace(/\s/g, '').trim()}/${deletedWall.file_name}.${deletedWall.file_ext}`, function (err, stats) {
             if (err) {
                 return console.error(err);
             }
          
-            fs.unlink(`./storage/wallpapers/${category.name}/${deletedWall.file_name}.${deletedWall.file_ext}`,function(err){
+            fs.unlink(`./storage/wallpapers/${category.name.replace(/\s/g, '').trim()}/${deletedWall.file_name}.${deletedWall.file_ext}`,function(err){
                  if(err) return console.log(err);
-                 console.log(`${category.name}/${deletedWall.file_name}.${deletedWall.file_ext} file deleted successfully from temp folder`);
+                 console.log(`${category.name.replace(/\s/g, '').trim()}/${deletedWall.file_name}.${deletedWall.file_ext} file deleted successfully from temp folder`);
             });  
         });
 
-        fs.stat(`./storage/wallpapers/${category.name}/thumbnails/${deletedWall.file_name}.${deletedWall.file_ext}`, function (err, stats) {
+        fs.stat(`./storage/wallpapers/${category.name.replace(/\s/g, '').trim()}/thumbnails/${deletedWall.file_name}.${deletedWall.file_ext}`, function (err, stats) {
             if (err) {
                 return console.error(err);
             }
          
-            fs.unlink(`./storage/wallpapers/${category.name}/thumbnails/${deletedWall.file_name}.${deletedWall.file_ext}`,function(err){
+            fs.unlink(`./storage/wallpapers/${category.name.replace(/\s/g, '').trim()}/thumbnails/${deletedWall.file_name}.${deletedWall.file_ext}`,function(err){
                  if(err) return console.log(err);
-                 console.log(`${category.name}/${deletedWall.file_name}.${deletedWall.file_ext} file deleted successfully from temp folder`);
+                 console.log(`${category.name.replace(/\s/g, '').trim()}/${deletedWall.file_name}.${deletedWall.file_ext} file deleted successfully from temp folder`);
             });  
         });
 
