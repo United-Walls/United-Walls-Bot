@@ -224,10 +224,6 @@ router.get('/queries', async (req, res) => {
 			locale: 'en_US',
 			numericOrdering: true,
 		}).select('-timesFavourite -timesDownloaded -hidden').skip(page * numberOfWalls).limit(numberOfWalls)
-		.populate({
-			path: 'creator',
-			select: '_id username'
-		});
 
 		return res.json(shuffle(walls));
 	} catch (err) {
