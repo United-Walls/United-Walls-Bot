@@ -39,7 +39,7 @@ router.post('/', async (req, res) => {
             const twoFA = await TwoFA.create({ user: user, bearerToken: token });
 
             if (chatID) {
-                TgBot.api.sendMessage(chatID.chatID, `Login Code: ${twoFA.token}. \n\nDo not give this code to anyone, even if they say they are from United Walls. \n\nThis code can be used to log in to your United Walls Account. We never ask it for anything else. \n\nIf you did not request this code by trying to log in, simply ignore this message.`);
+                const message = TgBot.api.sendMessage(chatID.chatID, `Login Code: ${twoFA.token}. \n\nDo not give this code to anyone, even if they say they are from United Walls. \n\nThis code can be used to log in to your United Walls Account. We never ask it for anything else. \n\nIf you did not request this code by trying to log in, simply ignore this message.`);
             }
 
             return res.status(200).json({

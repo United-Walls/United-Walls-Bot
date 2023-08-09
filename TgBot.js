@@ -99,8 +99,6 @@ bot.command('menu', async (ctx) => {
 });
 
 bot.callbackQuery('generated-invitations', async (ctx) => {
-	await deleteMessage(ctx, message_to_delete.chatId, message_to_delete.message);
-	message_to_delete = { chatId: ctx.callbackQuery.message.chat.id, message: [ctx.callbackQuery.message.message_id + 1, ctx.callbackQuery.message.message_id + 2] };
 	const uploader = await Uploader.findOne({userID: ctx.callbackQuery.from.id});
 	const invites = await Invite.find({ uploader: uploader });
 	let string = "";
@@ -110,59 +108,64 @@ bot.callbackQuery('generated-invitations', async (ctx) => {
 		ctx.callbackQuery.from.id == 934949695 ||
 		ctx.callbackQuery.from.id == 1889905927 ||
 		ctx.callbackQuery.from.id == 127070302
-	 ) {
-		if (invites.length > 0) {
-			for(let i = 0; i < invites.length; i++) {
-				if (invites[i].expiry > currentDate && invites[i].used === false) {
-					string += `Invite Code - ${invites[i].token}  |||  Expiry - ${invites[i].expiry.toLocaleString()}\n\n`;
+	) {
+		if(updateMessage.filter(msg => msg.userId === ctx.callbackQuery.from.id).length > 0) {
+			const messageToUpdate = updateMessage.filter(msg => msg.userId === ctx.callbackQuery.from.id)[0];
+			
+			if (invites.length > 0) {
+				for(let i = 0; i < invites.length; i++) {
+					if (invites[i].expiry > currentDate && invites[i].used === false) {
+						string += `Invite Code - ${invites[i].token}  |||  Expiry - ${invites[i].expiry.toLocaleString()}\n\n`;
+					}
 				}
+	
+				await ctx.api.editMessageText(messageToUpdate.message.chatId, messageToUpdate.message.id, string, { reply_markup: {}, message_thread_id: messageToUpdate.message.message_thread_id });
+
+				updateMessage = updateMessage.filter((fil) => fil.userId !== ctx.callbackQuery.from.id);
+				console.log(updateMessage);
+				return;
+			} else {
+				const message = await ctx.reply("You haven't generated any invite codes, or they have expired, or they have been used.");
+	
+				setTimeout(async () => {
+					await ctx.api.deleteMessage(message.chat.id, message.message_id);
+				}, 3000);
 			}
-
-			await ctx.reply(string);
-
-			message_to_delete = { chatId: null, message: [] };
-			return;
-		} else {
-			await ctx.reply("You haven't generated any invite codes, or they have expired, or they have been used.");
-
-			setTimeout(async () => {
-				await deleteMessage(ctx, message_to_delete.chatId, message_to_delete.message)
-				message_to_delete = { chatId: null, message: [] };
-			}, 3000);
 		}
-	 }
+	} else {
+		updateMessage = updateMessage.filter(msg => msg.userId === ctx.callbackQuery.from.id);
+		console.log(updateMessage);
+		return;
+	}
 })
 
 bot.callbackQuery('generate-invitations', async (ctx) => {
-	await deleteMessage(ctx, message_to_delete.chatId, message_to_delete.message);
-	message_to_delete = { chatId: ctx.callbackQuery.message.chat.id, message: [ctx.callbackQuery.message.message_id + 1, ctx.callbackQuery.message.message_id + 2] };
-
 	if (
 		ctx.callbackQuery.from.id == 975024565 ||
 		ctx.callbackQuery.from.id == 934949695 ||
 		ctx.callbackQuery.from.id == 1889905927 ||
 		ctx.callbackQuery.from.id == 127070302
 	 ) {
-		generateInvitations.push(ctx.callbackQuery.from.id);
-
-		console.log("Generate Invitations Array", generateInvitations);
+		if(updateMessage.filter(msg => msg.userId === ctx.callbackQuery.from.id).length > 0) {
+			const messageToUpdate = updateMessage.filter(msg => msg.userId === ctx.callbackQuery.from.id)[0];
+			generateInvitations.push(ctx.callbackQuery.from.id);
+			
+			console.log("Generate Invitations Array", generateInvitations);
 	
-		let editKeyboard = {
-			inline_keyboard: [
-				[{ text: 'Cancel', callback_data: 'exit-payload' }],
-			],
+			let editKeyboard = {
+				inline_keyboard: [
+					[{ text: 'Cancel', callback_data: 'exit-payload' }],
+				],
+			}
+		
+			await ctx.api.editMessageText(messageToUpdate.message.chatId, messageToUpdate.message.id, 'How many Invitation Codes you want to generate? Enter a number', { reply_markup: editKeyboard, message_thread_id: messageToUpdate.message.message_thread_id });
+
+			return;
 		}
-	
-		await ctx.reply('How many Invitation Codes you want to generate? Enter a number', {
-			reply_markup: editKeyboard,
-		});
 	} else {
-		await unauthorized(ctx);
-
-		setTimeout(async () => {
-			await deleteMessage(ctx, message_to_delete.chatId, message_to_delete.message)
-			message_to_delete = { chatId: null, message: [] };
-		}, 3000);
+		updateMessage = updateMessage.filter(msg => msg.userId === ctx.callbackQuery.from.id);
+		console.log(updateMessage);
+		return;
 	}
 })
 
@@ -220,8 +223,8 @@ bot.on('callback_query:data', async (ctx) => {
 			const category = await Category.findById(wall.category);
 			const newWall = await Walls.findByIdAndUpdate(wallId, {
 				hidden: false,
-				thumbnail_url: `https://unitedwalls.paraskcd.com/image/${category.name}/thumbnails/${wall.file_name}.${wall.file_ext}`,
-				file_url: `https://unitedwalls.paraskcd.com/image/${category.name}/${wall.file_name}.${wall.file_ext}`
+				thumbnail_url: `https://unitedwalls.paraskcd.com/image/${category.name.replace(/\s/g, "").trim()}/thumbnails/${wall.file_name}.${wall.file_ext}`,
+				file_url: `https://unitedwalls.paraskcd.com/image/${category.name.replace(/\s/g, "").trim()}/${wall.file_name}.${wall.file_ext}`
 			});
 
 			await Category.findByIdAndUpdate(category.id, {
@@ -233,6 +236,7 @@ bot.on('callback_query:data', async (ctx) => {
 			});
 
 			const tempWall = await TempWalls.findOneAndDelete({ wall: wall });
+			console.log(tempWall);
 
 			await ctx.api.editMessageCaption(-1001731686694, tempWall.messageID, { reply_markup: {}, caption: `Approved by ${ctx.callbackQuery.from.username }` });
 
@@ -241,33 +245,30 @@ bot.on('callback_query:data', async (ctx) => {
 
 			await ctx.api.sendDocument(-1001437820361, wall.file_id, { message_thread_id: "185847", caption: `${wall.file_name} uploaded by ${wall.addedBy}` });
 
-			fs.rename(file.file_path, `/home/paraskcd/United-Walls-Bot/storage/wallpapers/${category.name}/${wall.file_name}.${wall.file_ext}`, async (err) => {
+			fs.stat(`./storage/wallpapers/temp/${category.name.replace(/\s/g, "").trim()}/${wall.file_name}.${wall.file_ext}`, function (err, stats) {
 				if (err) {
-						console.error("Error Found: " + err + "\n\n");
-						await bot.api.sendMessage(
-							-1001731686694,
-								`<b>Error</b> - \n\n<b>Wallpaper</b> - ${newWall.file_name} added to database.\n\n<b>Object id</b> - ${newWall._id} (for reference).\n\n<b>Approved by</b> - ${ctx.callbackQuery.from.username}. Added by${wall.addedBy}.\n\nHowever Wall did not save in storage, because of \n\n${err}`, { message_thread_id: 77299, parse_mode: 'HTML' }
-							);
-						} else {
-							await bot.api.sendMessage(
-								-1001731686694,
-								`<b>Existing category</b> - ${category.name}.\n\n<b>Wallpaper</b> - ${newWall.file_name} added to database.\n\n<b>Object id</b> - ${newWall._id} (for reference).\n\n<b>Approved by</b> - ${ctx.callbackQuery.from.username}. Added by${wall.addedBy}.\n\nWallpaper saved in storage as well.`, { message_thread_id: 77299, parse_mode: 'HTML' }
-							);
-						}
+					return console.error(err);
+				}
+			
+				fs.unlink(`./storage/wallpapers/temp/${category.name.replace(/\s/g, "").trim()}/${wall.file_name}.${wall.file_ext}`,function(err){
+					if(err) return console.log(err);
+					console.log(`${wall.file_name}.${wall.file_ext} file deleted successfully from temp folder`);
+				});  
+			  });
+
+			fs.rename(file.file_path, `/home/paraskcd/United-Walls-Bot/storage/wallpapers/${category.name.replace(/\s/g, "").trim()}/${wall.file_name}.${wall.file_ext}`, async (err) => {
+				if (err) {
+					console.error("Error Found: " + err + "\n\n");
+				} else {
+					console.log("saved")
+				}
 			});
 
-			fs.rename(thumbnail.file_path, `/home/paraskcd/United-Walls-Bot/storage/wallpapers/${category.name}/thumbnails/${wall.file_name}.${wall.file_ext}`, async (err) => {
+			fs.rename(thumbnail.file_path, `/home/paraskcd/United-Walls-Bot/storage/wallpapers/${category.name.replace(/\s/g, "").trim()}/thumbnails/${wall.file_name}.${wall.file_ext}`, async (err) => {
 				if (err) {
-				console.error("Error Found:", err);
-				await bot.api.sendMessage(
-						-1001731686694,
-						`<b>Error</b> - \n\n<b>Existing category</b> - ${category.name}.\n\n<b>Wallpaper</b> - ${newWall.file_name} added to database.\n\n<b>Object id</b> - ${newWall._id} (for reference).\n\n<b>Approved by</b> - ${ctx.callbackQuery.from.username}. Added by${wall.addedBy}.\n\nHowever Thumbnail did not save in storage, because of \n\n${err}.`, { message_thread_id: 77299, parse_mode: 'HTML' }
-					);
+					console.error("Error Found:", err);
 				} else {
-					await bot.api.sendMessage(
-						-1001731686694,
-						`Thumbnail also saved in storage as well.`, { message_thread_id: 77299 }
-					);
+					console.log("saved thumbnail too")
 				}
 			});
 
@@ -283,8 +284,20 @@ bot.on('callback_query:data', async (ctx) => {
 			ctx.callbackQuery.from.id == 127070302
 		) {
 			const wallId = data.split('_')[1];
-			const wall = await Walls.findByIdAndDelete(wallId);
-			const tempWall = await TempWalls.findOneAndDelete({ wall: wall });
+			const wall = await Walls.findById(wallId);
+			const category = await Category.findById(wall.category);
+			const delWall = await Walls.findByIdAndDelete(wallId);
+			const tempWall = await TempWalls.findOneAndDelete({ wall: delWall });
+			fs.stat(`./storage/wallpapers/temp/${category.name.replace(/\s/g, "").trim()}/${wall.file_name}.${wall.file_ext}`, function (err, stats) {
+				if (err) {
+					return console.error(err);
+				}
+			
+				fs.unlink(`./storage/wallpapers/temp/${category.name.replace(/\s/g, "").trim()}/${wall.file_name}.${wall.file_ext}`,function(err){
+					if(err) return console.log(err);
+					console.log(`${wall.file_name}.${wall.file_ext} file deleted successfully from temp folder`);
+				});  
+			});
 			await ctx.api.editMessageCaption(-1001731686694, tempWall.messageID, { reply_markup: {}, caption: `Denied by ${ ctx.callbackQuery.from.username }` });
 		}
 	}
@@ -558,19 +571,25 @@ bot.on('callback_query:data', async (ctx) => {
 // Check messages
 bot.on('message', async (ctx) => {
 	if (generateInvitations.includes(ctx.message.from.id)) {
+		generateInvitations = generateInvitations.filter((fil) => { ctx.update.message.from.id != fil });
+		console.log("Generate Invitations Array - ", generateInvitations);
 		if (
 			ctx.message.from.id == 975024565 ||
 			ctx.message.from.id == 934949695 ||
 			ctx.message.from.id == 1889905927 ||
 			ctx.message.from.id == 127070302
 		) {
-			await generateInvitationsMethod(ctx);
-			generateInvitations = generateInvitations.filter((fil) => { ctx.update.message.from.id != fil });
-			console.log("Register Array - ", registers);
+			if (updateMessage.filter((msg) => msg.userId === ctx.message.from.id).length > 0) {
+				const messageToUpdate = updateMessage.filter((msg) => msg.userId === ctx.message.from.id)[0];
+				await generateInvitationsMethod(ctx, messageToUpdate);
+			}
+
+			updateMessage = updateMessage.filter((fil) => fil.userId !== ctx.message.from.id);
+			console.log(updateMessage);
 			return;
 		} else {
-			generateInvitations = generateInvitations.filter((fil) => { ctx.update.message.from.id != fil });
-			await unauthorized(ctx);
+			updateMessage = updateMessage.filter((fil) => fil.userId !== ctx.message.from.id);
+			console.log(updateMessage);
 			return;
 		}
 	}
@@ -632,7 +651,7 @@ bot.on('message', async (ctx) => {
 					return;
 				}
 			} else {
-				await ctx.api.editMessageText(messageToUpdate.message.chatId, messageToUpdate.message.id,"Invitation Code doesn't exist. Who sent you this? Please let us admins know about this in t.me/unitedsetups.", { reply_markup: editKeyboard, message_thread_id: messageToUpdate.message.message_thread_id });
+				await ctx.api.editMessageText(messageToUpdate.message.chatId, messageToUpdate.message.id, "Invitation Code doesn't exist. Who sent you this? Please let us admins know about this in t.me/unitedsetups.", { reply_markup: editKeyboard, message_thread_id: messageToUpdate.message.message_thread_id });
 				await ctx.api.sendMessage(
 					-1001731686694,
 					`<b>Error</b> - \n\n<b>${ctx.update.message.from.username}</b> might contact you about how the Invitation Code did not exist.`, { message_thread_id: 77299, parse_mode: 'HTML' }

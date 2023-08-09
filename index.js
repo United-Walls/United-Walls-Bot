@@ -104,8 +104,8 @@ const app = express();
 
 app.use(compression());
 
-app.use(express.json({ limit: '10mb'}));
-app.use(express.urlencoded({ extended: true, limit: '10mb'}));
+app.use(express.json({ limit: '50mb'}));
+app.use(express.urlencoded({ extended: true, limit: '50mb'}));
 
 app.use(express.static("build"));
 
@@ -143,6 +143,8 @@ app.use('/api/creators/profile/upload', verifyToken, upload.single('profilePic')
         return res.status(500).send("Something went wrong. Please try again.");
   }
 });
+app.use('/api/creators/invitations', require('./api/creators/invitations'));
+app.use('/api/creators/approvals', require('./api/creators/approvals'));
 app.use('/api/creators/wallpapers', require('./api/creators/wallpapers'));
 app.use('/api/creators/wallpapers/upload', verifyToken, wallpaperUpload.array('walls'), async (req, res) => {
   try {
@@ -185,7 +187,7 @@ app.use('/api/creators/wallpapers/upload', verifyToken, wallpaperUpload.array('w
 
           const message = await TgBot.api.sendDocument(-1001437820361, new InputFile(`storage/wallpapers/temp/${categoryName}/${file.filename.split('.')[0]}.${file.filename.split('.')[1]}`), { message_thread_id: "185847", caption: `${newWall.file_name} uploaded by ${newWall.addedBy}` });
 
-          await Walls.findByIdAndUpdate(newWall.id, { file_id: message.document.file_id, thumbnail_id: message.document.thumb.file_id });
+          const theWall = await Walls.findByIdAndUpdate(newWall.id, { file_id: message.document.file_id, thumbnail_id: message.document.thumb.file_id }).populate({ path: 'creator', select: "_id" });
 
           let fileTg = await TgBot.api.getFile(message.document.file_id);
           let thumbnailTg = await TgBot.api.getFile(message.document.thumb.file_id);
@@ -232,14 +234,14 @@ app.use('/api/creators/wallpapers/upload', verifyToken, wallpaperUpload.array('w
           });
 
           tempWalls.push({
-            wall: newWall.id
+            wall: theWall
           });
         } else {
           const newWall = await Walls.create({
             file_name: `${file.filename.split('.')[0]}`,
             file_id: "",
             thumbnail_id: "",
-            file_url: "",
+            file_url: `https://unitedwalls.paraskcd.com/image/temp/${category.name.replace(/\s/g, "").trim()}/${file.filename.split('.')[0]}.${file.filename.split('.')[1]}`,
             thumbnail_url: "",
             mime_type: file.mimetype,
             category: categoryId,
@@ -254,17 +256,8 @@ app.use('/api/creators/wallpapers/upload', verifyToken, wallpaperUpload.array('w
             .text('Deny', `D_${newWall.id}`); 
           const message = await TgBot.api.sendDocument(-1001731686694, new InputFile(`storage/wallpapers/temp/${categoryName}/${file.filename.split('.')[0]}.${file.filename.split('.')[1]}`), { message_thread_id: 82113, reply_markup: inlineKeyboard, caption: `Creator: ${req.user.username}\n\nUploaded a wallpaper in the database.\n\nApprove or deny?` });
           await Walls.findByIdAndUpdate(newWall.id, { file_id: message.document.file_id, thumbnail_id: message.document.thumb.file_id });
-          const tempWall = await TempWalls.findOneAndUpdate({ wall: newWall }, { wall: newWall, messageID: message.message_id }, { upsert: true, new: true, setDefaultsOnInsert: true });
-          fs.stat(`./storage/wallpapers/temp/${categoryName}/${file.filename.split('.')[0]}.${file.filename.split('.')[1]}`, function (err, stats) {
-            if (err) {
-                return console.error(err);
-            }
-        
-            fs.unlink(`./storage/wallpapers/temp/${categoryName}/${file.filename.split('.')[0]}.${file.filename.split('.')[1]}`,function(err){
-                if(err) return console.log(err);
-                console.log(`${file.filename.split('.')[0]}.${file.filename.split('.')[1]} file deleted successfully from temp folder`);
-            });  
-          });
+          let tempWall = await TempWalls.findOneAndUpdate({ wall: newWall }, { wall: newWall, messageID: message.message_id }, { upsert: true, new: true, setDefaultsOnInsert: true });
+          tempWall = await TempWalls.findOne({ wall: newWall }).populate({path: 'wall', populate: { path: 'creator', select: "_id" }});
 
           tempWalls.push(tempWall);
         }

@@ -100,8 +100,6 @@ module.exports = async (ctx, updateMessage, flag) => {
                 .row()
                 .text('Reset password', `RUpl_${ctx.message.from.id}`)
                 .row()
-                .text('Add Uploader', 'add-user-payload')
-                .row()
                 .text('Edit Uploaders', 'edit-user-payload')
                 .row()
                 .text('Generate Invitations', 'generate-invitations')
@@ -118,19 +116,17 @@ module.exports = async (ctx, updateMessage, flag) => {
             return message;
         } else if (uploader.length > 0) {
             const inlineKeyboard = new InlineKeyboard()
-                .text('Update your Profile (With your Telegram Data)', `UUpl_${ctx.callbackQuery.from.id}`)
+                .text('Update your Profile (With your Telegram Data)', `UUpl_${ctx.message.from.id}`)
                 .row()
-                .text('Edit your Profile (Username, image privacy, etc.)', `EUpl_${ctx.callbackQuery.from.id}`)
+                .text('Edit your Profile (Username, image privacy, etc.)', `EUpl_${ctx.message.from.id}`)
                 .row()
-                .text('Your Wallpapers', `WUpl_${ctx.callbackQuery.from.id}`)
+                .text('Your Wallpapers', `WUpl_${ctx.message.from.id}`)
                 .row()
-                .text('Reset password', `RUpl_${ctx.callbackQuery.from.id}`)
+                .text('Reset password', `RUpl_${ctx.message.from.id}`)
                 .row()
                 .text('Exit', 'exit-payload');
 
-            const message = await ctx.api.editMessageText(messageToUpdate.message.chatId, messageToUpdate.message.id,
-                `Welcome to the United Walls Menu. Below are settings to manipulate the Wallpapers added in the Database. So, @${ctx.callbackQuery.from.username} what you want to do?`,
-                { message_thread_id: messageToUpdate.message.message_thread_id, reply_markup: inlineKeyboard }
+            const message = await ctx.reply(`Welcome to the United Walls Menu. Below are settings to manipulate the Wallpapers added in the Database. So, @${ctx.message.from.username} what you want to do?`,{ reply_markup: inlineKeyboard }
             );
 
             return message;

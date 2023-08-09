@@ -371,12 +371,10 @@ Access -    Public
 
 router.get('/', async (req, res) => {
 	try {
-		let walls = await Walls.find().sort({ createdAt: -1 }).collation({
+		let walls = await Walls.find({ hidden: false }).sort({ createdAt: -1 }).collation({
 			locale: 'en_US',
 			numericOrdering: true,
 		});
-
-		walls = walls.filter(wall => wall.hidden === false);
 		return res.json(walls);
 	} catch (err) {
 		console.error(err.message);
