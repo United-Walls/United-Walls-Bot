@@ -46,7 +46,7 @@ let addAvatar = [];
 let registers = [];
 let invitation = [];
 let generateInvitations = []
-let message_to_delete = {chatId: null, message: []};
+let denyWall = [];
 let updateMessage = [];
 let userId = '';
 let wallId = '';
@@ -283,22 +283,35 @@ bot.on('callback_query:data', async (ctx) => {
 			ctx.callbackQuery.from.id == 1889905927 ||
 			ctx.callbackQuery.from.id == 127070302
 		) {
-			const wallId = data.split('_')[1];
-			const wall = await Walls.findById(wallId);
-			const category = await Category.findById(wall.category);
-			const delWall = await Walls.findByIdAndDelete(wallId);
-			const tempWall = await TempWalls.findOneAndDelete({ wall: delWall });
-			fs.stat(`./storage/wallpapers/temp/${category.name.replace(/\s/g, "").trim()}/${wall.file_name}.${wall.file_ext}`, function (err, stats) {
-				if (err) {
-					return console.error(err);
-				}
-			
-				fs.unlink(`./storage/wallpapers/temp/${category.name.replace(/\s/g, "").trim()}/${wall.file_name}.${wall.file_ext}`,function(err){
-					if(err) return console.log(err);
-					console.log(`${wall.file_name}.${wall.file_ext} file deleted successfully from temp folder`);
-				});  
-			});
-			await ctx.api.editMessageCaption(-1001731686694, tempWall.messageID, { reply_markup: {}, caption: `Denied by ${ ctx.callbackQuery.from.username }` });
+			wallId = data.split('_')[1];
+			const wall = await Walls.findById(data.split('_')[1]);
+			const tempWall = await TempWalls.findOne({ wall });
+			denyWall.push(ctx.callbackQuery.from.id);
+			const editKeyboard = {
+				inline_keyboard: [
+					[{ text: 'Cancel', callback_data: `C_${data.split('_')[1]}` }],
+				],
+			}
+			await ctx.api.editMessageCaption(-1001731686694, tempWall.messageID, { reply_markup: editKeyboard, caption: `Please write reason for Deny. This Reason will be sent to the uploader` });
+		}
+	}
+
+	if (data.split('_')[0] == 'C') {
+		if (
+			ctx.callbackQuery.from.id == 975024565 ||
+			ctx.callbackQuery.from.id == 934949695 ||
+			ctx.callbackQuery.from.id == 1889905927 ||
+			ctx.callbackQuery.from.id == 127070302
+		) {
+			wallId = data.split('_')[1];
+			const wall = await Walls.findById(data.split('_')[1]);
+			const tempWall = await TempWalls.findOne({ wall });
+			denyWall = denyWall.filter(ids => ids != ctx.callbackQuery.from.id);
+			const inlineKeyboard = new InlineKeyboard()
+									.text('Approve', `A_${data.split('_')[1]}`)
+									.row()
+									.text('Deny', `D_${data.split('_')[1]}`); 
+			await ctx.api.editMessageCaption(-1001731686694, tempWall.messageID, { reply_markup: inlineKeyboard, caption: `Creator: ${wall.addedBy}\n\nUploaded a wallpaper in the database.\n\nApprove or deny?` });
 		}
 	}
 
@@ -728,6 +741,27 @@ bot.on('message', async (ctx) => {
 			console.log(updateMessage);
 			return;
 		}
+	}
+
+	if (denyWall.includes(ctx.message.from.id)) {
+		denyWall = denyWall.filter(ids => ids != ctx.message.from.id);
+		console.log("Deny Wall Name Array -", denyWall);
+		const wall = await Walls.findById(wallId).populate('creator');
+		const category = await Category.findById(wall.category);
+		const delWall = await Walls.findByIdAndDelete(wallId);
+		const tempWall = await TempWalls.findOneAndDelete({ wall: delWall });
+		fs.stat(`./storage/wallpapers/temp/${category.name.replace(/\s/g, "").trim()}/${wall.file_name}.${wall.file_ext}`, function (err, stats) {
+			if (err) {
+				return console.error(err);
+			}
+		
+			fs.unlink(`./storage/wallpapers/temp/${category.name.replace(/\s/g, "").trim()}/${wall.file_name}.${wall.file_ext}`,function(err){
+				if(err) return console.log(err);
+				console.log(`${wall.file_name}.${wall.file_ext} file deleted successfully from temp folder`);
+			});  
+		});
+		await ctx.api.editMessageCaption(-1001731686694, tempWall.messageID, { reply_markup: {}, caption: `Denied by ${ ctx.message.from.username }` });
+		await ctx.api.sendDocument(wall.creator.userID, wall.file_id, { caption: `Your Wallpaper has been denied by our Admins because of the following reason -\n\n"${ctx.message.text}"\n\nIf you have any further questions, please contact our Admins in the https://t.me/unitedsetups group. Thank you! :)` });
 	}
 	
 	const msg = ctx.message;

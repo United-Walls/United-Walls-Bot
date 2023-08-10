@@ -123,11 +123,6 @@ const checkWallUploads = async (msg, bot, ctx) => {
 												-1001731686694,
 													`<b>Error</b> - \n\n<b>New category</b> - ${newCategory.name} created and added to the database.\n\n<b>Wallpaper</b> - ${newWall.file_name} added to database.\n\n<b>Object id</b> - ${newWall._id} (for reference).\n\n<b>Added by</b> - ${msg.from.username}.\n\nHowever Wall did not save in storage, because of \n\n${err}`, { message_thread_id: 77299, parse_mode: 'HTML' }
 												);
-											} else {
-												await bot.api.sendMessage(
-													-1001731686694,
-													`<b>New category</b> - ${newCategory.name} created and added to the database.\n\n<b>Wallpaper</b> - ${newWall.file_name} added to database.\n\n<b>Object id</b> - ${newWall._id} (for reference).\n\n<b>Added by</b> - ${msg.from.username}.\n\nWallpaper saved in storage as well.`, { message_thread_id: 77299, parse_mode: 'HTML' }
-												);
 											}
 										});
 						
@@ -137,11 +132,6 @@ const checkWallUploads = async (msg, bot, ctx) => {
 											await bot.api.sendMessage(
 												-1001731686694,
 													`<b>Error</b> - \n\n<b>New category</b> - ${newCategory.name} created and added to the database.\n\n<b>Wallpaper</b> - ${newWall.file_name} added to database.\n\n<b>Object id</b> - ${newWall._id} (for reference).\n\n<b>Added by</b> - ${msg.from.username}.\n\nHowever Thumbnail did not save in storage, because of \n\n${err}`, { message_thread_id: 77299, parse_mode: 'HTML' }
-												);
-											} else {
-												await bot.api.sendMessage(
-													-1001731686694,
-													`Thumbnail also saved in storage as well.`, {message_thread_id: 77299}
 												);
 											}
 										});
@@ -171,11 +161,10 @@ const checkWallUploads = async (msg, bot, ctx) => {
 
 										await bot.api.deleteMessage(msg.chat.id, msg.message_id);
 
-										const replyMessage = await ctx.reply(
-											`Hey, @${msg.from.username ? msg.from.username + ", " : ""}Your wallpaper has gone for Approval. Once approved, you'll be able to see your Wallpaper here. If you have any questions, ask the admins.`, { message_thread_id: 185847, parse_mode: 'HTML' }
-										);
+										const newMessage = await bot.api.sendMessage(msg.chat.id, `Hey ${msg.from.username ? "@" + msg.from.username : ""}. Thanks for uploading! Your wallpaper has been sent for approval. Once approved, you'll be able to see your Wallpaper here. If you have any questions, ask the admins.`, { message_thread_id: 185847 });
+
 										setTimeout(async () => {
-											await ctx.api.deleteMessage(replyMessage.chat.id, replyMessage.message_id);	
+											await bot.api.deleteMessage(msg.chat.id, newMessage.message_id);
 										}, 10000);
 										return;
 									}
