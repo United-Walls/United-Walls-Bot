@@ -37,6 +37,7 @@ const menu = require('./bot/menu');
 const editPayload = require('./bot/editPayload');
 const editUserPayload = require('./bot/editUserPayload');
 const register = require('./bot/register');
+const fixWall = require('./tgBotFunctions/fixWall');
 
 let editName = [];
 let addUploader = [];
@@ -364,6 +365,27 @@ bot.on('callback_query:data', async (ctx) => {
 					],
 				};
 				await ctx.api.editMessageText(messageToUpdate.message.chatId, messageToUpdate.message.id, 'Please enter a new name for the Wallpaper.', { reply_markup: editKeyboard, message_thread_id: messageToUpdate.message.message_thread_id });
+			}
+		}
+	}
+
+	if (data.split('_')[0] == 'Fix') {
+		if (
+			ctx.callbackQuery.from.id == 975024565 ||
+			ctx.callbackQuery.from.id == 934949695 ||
+			ctx.callbackQuery.from.id == 1889905927 ||
+			ctx.callbackQuery.from.id == 127070302
+		) {
+			if (updateMessage.filter(msg => msg.userId === ctx.callbackQuery.from.id).length > 0) {
+				const messageToUpdate = updateMessage.filter(msg => msg.userId === ctx.callbackQuery.from.id)[0];
+				await fixWall(ctx, data.split('_')[1], messageToUpdate);
+
+				setTimeout(async () => {
+					await ctx.api.deleteMessage(messageToUpdate.message.chatId, messageToUpdate.message.id);
+				}, 10000);
+		
+				updateMessage = updateMessage.filter((fil) => fil.userId !== ctx.callbackQuery.from.id);
+				console.log(updateMessage);
 			}
 		}
 	}

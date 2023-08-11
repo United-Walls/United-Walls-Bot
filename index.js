@@ -199,11 +199,6 @@ app.use('/api/creators/wallpapers/upload', verifyToken, wallpaperUpload.array('w
                   -1001731686694,
                     `<b>Error</b> - \n\n<b>Wallpaper</b> - ${newWall.file_name} added to database.\n\n<b>Object id</b> - ${newWall._id} (for reference).\n\n Added by${newWall.addedBy}.\n\nHowever Wall did not save in storage, because of \n\n${err}`, { message_thread_id: 77299, parse_mode: 'HTML' }
                   );
-                } else {
-                  await TgBot.api.sendMessage(
-                    -1001731686694,
-                    `<b>Existing category</b> - ${categoryName}.\n\n<b>Wallpaper</b> - ${newWall.file_name} added to database.\n\n<b>Object id</b> - ${newWall._id} (for reference).\n\n Added by${newWall.addedBy}.\n\nWallpaper saved in storage as well.`, { message_thread_id: 77299, parse_mode: 'HTML' }
-                  );
                 }
           });
     
@@ -213,11 +208,6 @@ app.use('/api/creators/wallpapers/upload', verifyToken, wallpaperUpload.array('w
             await TgBot.api.sendMessage(
                 -1001731686694,
                 `<b>Error</b> - \n\n<b>Existing category</b> - ${categoryName}.\n\n<b>Wallpaper</b> - ${newWall.file_name} added to database.\n\n<b>Object id</b> - ${newWall._id} (for reference).\n\n Added by${newWall.addedBy}.\n\nHowever Thumbnail did not save in storage, because of \n\n${err}.`, { message_thread_id: 77299, parse_mode: 'HTML' }
-              );
-            } else {
-              await TgBot.api.sendMessage(
-                -1001731686694,
-                `Thumbnail also saved in storage as well.`, { message_thread_id: 77299 }
               );
             }
           });
