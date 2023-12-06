@@ -332,10 +332,7 @@ function getRandomInt(min, max) {
 }
 
 const axiosFunc = async () => {
-  const date = new Date();
-  if (date.getDate() == 1) {
-    await WallOfDay.collection.drop().catch((error) => console.log(error));
-  }
+  await WallOfDay.collection.drop().catch((error) => console.log(error));
   const count = await axios.get("http://localhost:5002/api/walls/count");
   const randomValue = getRandomInt(0, (count.data - 1));
   const getRandomWall = await axios.get("http://localhost:5002/api/walls/wallOfDay?index=" + randomValue);

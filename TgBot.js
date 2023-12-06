@@ -4,7 +4,7 @@ require('dotenv').config();
 // Create new instance of Bot class, pass your token in the Bot constructor.
 const bot = new Bot(process.env.TELEGRAM_BOT_TOKEN, {
 	client: {
-		apiRoot: "http://10.0.0.72:8081"
+		apiRoot: process.env.TELEGRAM_API
 	}
 });
 const start = require('./bot/start')
