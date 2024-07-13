@@ -89,7 +89,7 @@ router.get("/walls/downloaded/queries", async (req, res) => {
 		}).select('-password');
 
 		return res.json(uploaderWalls.walls);
-	} catch {
+	} catch(err) {
 		console.error(err.message);
 		TgBot.api.sendMessage(
 			-1001731686694,
@@ -158,7 +158,7 @@ router.get("/walls/liked/queries", async (req, res) => {
 		}).select('-password');
 
 		return res.json(uploaderWalls.walls);
-	} catch {
+	} catch(err) {
 		console.error(err.message);
 		TgBot.api.sendMessage(
 			-1001731686694,
@@ -191,7 +191,7 @@ router.get("/walls/count", async (req, res) => {
 			wallLength += walls.filter(wall => wall.id === wallU.id).length;
 		}
 		return res.json(wallLength);
-	} catch {
+	} catch(err) {
 		console.error(err.message);
 		TgBot.api.sendMessage(
 			-1001731686694,
@@ -228,7 +228,7 @@ router.get("/wall", async (req, res) => {
 		} else {
 			return res.json({});
 		}
-	} catch {
+	} catch(err) {
 		console.error(err.message);
 		TgBot.api.sendMessage(
 			-1001731686694,
@@ -266,7 +266,7 @@ router.get("/walls/queries", async (req, res) => {
 		}).select('-password');
 
 		return res.json(uploaderWalls);
-	} catch {
+	} catch(err) {
 		console.error(err.message);
 		TgBot.api.sendMessage(
 			-1001731686694,

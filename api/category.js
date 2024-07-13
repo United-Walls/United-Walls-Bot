@@ -116,7 +116,7 @@ router.get("/wall", async (req, res) => {
 		} else {
 			return res.json({});
 		}
-	} catch {
+	} catch(err) {
 		console.error(err.message);
 		TgBot.api.sendMessage(
 			-1001731686694,
@@ -154,7 +154,7 @@ router.get("/walls/queries", async (req, res) => {
 		});
 
 		return res.json(categoryWalls);
-	} catch {
+	} catch(err) {
 		console.error(err.message);
 		TgBot.api.sendMessage(
 			-1001731686694,
