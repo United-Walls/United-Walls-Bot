@@ -245,6 +245,9 @@ app.use('/api/creators/wallpapers/upload', verifyToken, wallpaperUpload.array('w
             await TgBot.api.deleteMessage(message.chat.id, message.message_id);
             throw "Error: No thumbnail or file ID. Deleting Wallpaper...";
           }
+          return res.status(201).json({
+            status: true
+          });
         } else {
           const newWall = await Walls.create({
             file_name: `${file.filename.split('.')[0]}`,
