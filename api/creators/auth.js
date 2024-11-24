@@ -29,8 +29,9 @@ router.post('/', async (req, res) => {
         }
         
         const chatID = await ChatIDs.findOne({user: user});
-
-        if (user && (await bcrypt.compare(password, user.password))) {
+        if (password && user) {
+          const compare = await bcrypt.compare(password, user.password);
+          if (compare) {
             const token = jwt.sign({
                 id: user._id,
             },
@@ -45,15 +46,11 @@ router.post('/', async (req, res) => {
             return res.status(200).json({
                 token: "Bearer " + token
             })
+          }
         }
         
-        return res.status(400).send("Bro forgot his username or password 💀. Funny!")
+        return res.status(401).send("Bro forgot his username or password 💀. Funny!")
     } catch (err) {
-        console.error(err);
-        TgBot.api.sendMessage(
-			-1001731686694,
-			`Error: Hey, @ParasKCD, wake up! There was an error in the United Walls Server. Might have crashed, don't know.\n\nHere's the Error\n\n${err.message}`, { message_thread_id: 77299 }
-		);
         return res.status(500).send("Something went wrong. Please try again.");
     }
 });

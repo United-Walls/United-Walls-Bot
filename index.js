@@ -73,8 +73,11 @@ const wallStorage = multer.diskStorage({
 			locale: 'en_US',
 			numericOrdering: true,
 		}));
-    const index = parseInt(lastWall.file_name.split('_')[1]) + 1 + array;
-    array = array + 1;
+    let index = 1;
+    if (lastWall) {
+      index = parseInt(lastWall.file_name.split('_')[1]) + 1 + array;
+      array = array + 1;
+    }
     const mime_type = file.mimetype;
 
     req.user = { ...req.user };
